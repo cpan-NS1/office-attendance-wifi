@@ -101,6 +101,9 @@ fi
 
 if [[ ${DRY_RUN:-0} == 1 ]]; then
   log "Dry run: would set $today column $column_id to Office for item $item_id."
+  if [[ -n "${TERMINAL_NOTIFIER:-}" && -x "$TERMINAL_NOTIFIER" ]]; then
+    "$TERMINAL_NOTIFIER" -message "Dry run: would mark as Office for today" -title "Attendance Check-in" -sound default 2>/dev/null || true
+  fi
   exit 0
 fi
 
