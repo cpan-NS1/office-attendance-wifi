@@ -120,3 +120,6 @@ fi
 
 print -r -- "$item_id" > "$marker"
 log "Set $today column $column_id to Office for item $item_id."
+if [[ -n "${TERMINAL_NOTIFIER:-}" && -x "$TERMINAL_NOTIFIER" ]]; then
+  "$TERMINAL_NOTIFIER" -message "Marked as Office for today" -title "Attendance Check-in" -sound default 2>/dev/null || true
+fi
