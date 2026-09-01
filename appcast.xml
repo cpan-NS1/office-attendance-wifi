@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Office Attendance Updates</title>
+    <item>
+      <title>Version 1.0.0</title>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <pubDate>Tue, 15 Jul 2025 00:00:00 +0000</pubDate>
+      <enclosure url="https://github.com/Chandler9711/office-attendance-wifi/releases/download/v1.0.0/OfficeAttendance.dmg"
+                 sparkle:edSignature="PLACEHOLDER"
+                 length="0"
+                 type="application/octet-stream"/>
+    </item>
+  </channel>
+</rss>

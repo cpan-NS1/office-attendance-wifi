@@ -22,6 +22,7 @@ final class AttendanceCoordinator: ObservableObject {
     func start() {
         guard let credentials = credentialStore.load() else {
             // No credentials — stay idle; SettingsWindow will be shown by AppDelegate
+            NotificationService.shared.sendSetupReminder()
             return
         }
         networkMonitor.start(credentials: credentials)
@@ -43,8 +44,9 @@ final class AttendanceCoordinator: ObservableObject {
             let key = todayKey()
             UserDefaults.standard.set(status.mondayValue, forKey: key)
             checkInState = .checkedIn(status)
-            // TODO: Task 7 — NotificationService.shared.sendCheckInNotification(status: status)
+            NotificationService.shared.sendChangeConfirmation(status: status)
         } catch {
+            AppLogger.shared.log("Manual check-in failed: \(error.localizedDescription)")
             checkInState = .error(error.localizedDescription)
         }
     }
@@ -83,8 +85,9 @@ final class AttendanceCoordinator: ObservableObject {
                                                 columnMap: columnMap)
                 UserDefaults.standard.set(status.mondayValue, forKey: key)
                 checkInState = .checkedIn(status)
-                // TODO: Task 7 — NotificationService.shared.sendCheckInNotification(status: status)
+                NotificationService.shared.sendCheckInNotification(status: status)
             } catch {
+                AppLogger.shared.log("Check-in failed: \(error.localizedDescription)")
                 checkInState = .error(error.localizedDescription)
             }
         }

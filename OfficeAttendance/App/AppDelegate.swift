@@ -29,7 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         Task { @MainActor [weak self] in self?.coordinator?.start() }
 
-        // TODO: Task 7 — NotificationService.shared.requestPermission()
+        NotificationService.shared.requestPermission()
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem?.button?.title = "🏢?"
@@ -40,9 +40,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             settingsWindowController?.show()
         }
 
-        // TODO: Task 7 — Listen for notification-triggered actions
-        // NotificationCenter.default.addObserver(self, selector: #selector(openSettings),
-        //                                        name: .openSettings, object: nil)
+        // Listen for notification-triggered actions
+        NotificationCenter.default.addObserver(self, selector: #selector(openSettings),
+                                               name: .openSettings, object: nil)
     }
 
     private func buildMenu() -> NSMenu {
