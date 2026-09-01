@@ -22,3 +22,5 @@ macOS-app/build/
 *.p12
 *.mobileprovision
 *.provisionprofile
+.env
+.DS_Store
