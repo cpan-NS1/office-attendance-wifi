@@ -91,16 +91,26 @@ The resolved mapping is stored in `UserDefaults` (not Keychain — not sensitive
 
 ### 5.2 Check-in Flow
 
-Two sequential API calls, matching the existing shell plugin logic:
+The board has one row per person per week. Each day of the week is a separate column in that row. Check-in requires two sequential API calls:
 
-1. **Query** — fetch all items on the board, filter by `employeeColumnId == EMPLOYEE_ID` and `weekStartColumnId == thisWeekMonday`, return `item_id`.
-2. **Mutation** — call `change_simple_column_value` with `item_id`, the weekday's `columnId`, and the status string (`Office`, `WFH`, `Sick`, `Vacation`, `Holiday`).
+1. **Query** — fetch all items on the board, filter by:
+   - `employeeColumnId == EMPLOYEE_ID` (identifies the user's row)
+   - `weekStartColumnId == thisWeekStartDate` (e.g. `2025-07-14` for the week of Mon 14 Jul — identifies the correct week row)
+
+   Returns `item_id` for the matching row.
+
+2. **Mutation** — call `change_simple_column_value` with:
+   - `item_id` — the row found above
+   - `columnId` — the column for **today's weekday** (e.g. `wednesdayColumnId` if today is Wednesday)
+   - `value` — the status string (`Office`, `WFH`, `Sick`, `Vacation`, `Holiday`)
+
+`thisWeekStartDate` is always the Monday of the current week, computed at runtime as `today - (weekday - 1) days`. This locates the row; the weekday-to-column mapping determines which cell within that row is written.
 
 All requests use `URLSession` with a 30-second timeout. On failure: log to a rotating log file (max 1 MB, 3 rotations), show an error note in the Menu Bar dropdown. No error notification is posted to avoid interrupting the user.
 
 ### 5.3 Status Values
 
-`Office` · `WFH` · `Sick` · `Vacation` · `Holiday`
+`Office` · `WFH` · `WFH:Sickness` · `Vacation` · `LOA` · `Bank Holiday` · `Travel`
 
 These are the values written directly to Monday.com as status strings, matching the board's label configuration.
 
