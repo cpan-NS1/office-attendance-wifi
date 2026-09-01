@@ -8,9 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		0121222B49500D8AB7F099A6 /* AttendanceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55AB2E3EC8D771E20DA746B1 /* AttendanceStatus.swift */; };
+		10D464105851EA7A34DAA73B /* AttendanceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52544A587D6756E40D1487E4 /* AttendanceCoordinator.swift */; };
 		1B71FC9ED01892BA9F4A1D63 /* ColumnMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DC8A2DE514A0FAE210E99FE /* ColumnMap.swift */; };
 		27CADA61FDD6578878753466 /* AttendanceStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */; };
+		2A456DBF578DF0ECB4F69069 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */; };
 		3CCDCCEE7B804518B1202E38 /* OfficeAttendanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */; };
+		467C76D4DCDA3D26BBCD14D0 /* AttendanceCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655149E789A7552FDC5F95D3 /* AttendanceCoordinatorTests.swift */; };
 		4B4322183C0794179CA41418 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85419957765EE5A708BD11B4 /* AppDelegate.swift */; };
 		64569A0AAC246B673567C0A2 /* CheckInState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6197D6C68BE9EC790BFF2E12 /* CheckInState.swift */; };
 		67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */; };
@@ -19,6 +22,7 @@
 		8560102CCA7F203969ABB39D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4DE0096DA7D837A132C374 /* CredentialStore.swift */; };
 		B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */; };
 		C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */; };
+		CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C17F111C461DB2D409E8E4 /* SettingsView.swift */; };
 		EB9DE5FD11EAE0FFDC43CCB9 /* MondayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8985095425240345AD2049E5 /* MondayService.swift */; };
 /* End PBXBuildFile section */
 
@@ -36,10 +40,13 @@
 		05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceStatusTests.swift; sourceTree = "<group>"; };
 		247B519821475F58BAAB27BA /* OfficeAttendance.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OfficeAttendance.entitlements; sourceTree = "<group>"; };
 		2A0D428FB003762584DBA138 /* OfficeAttendance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OfficeAttendance.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		35C17F111C461DB2D409E8E4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		44F34155D8ABDFD5C9731414 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		52544A587D6756E40D1487E4 /* AttendanceCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceCoordinator.swift; sourceTree = "<group>"; };
 		55AB2E3EC8D771E20DA746B1 /* AttendanceStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceStatus.swift; sourceTree = "<group>"; };
 		5DC8A2DE514A0FAE210E99FE /* ColumnMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnMap.swift; sourceTree = "<group>"; };
 		6197D6C68BE9EC790BFF2E12 /* CheckInState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInState.swift; sourceTree = "<group>"; };
+		655149E789A7552FDC5F95D3 /* AttendanceCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceCoordinatorTests.swift; sourceTree = "<group>"; };
 		6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MondayServiceTests.swift; sourceTree = "<group>"; };
 		85419957765EE5A708BD11B4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		88421078DE83E9A232A6C2A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -50,6 +57,7 @@
 		CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceApp.swift; sourceTree = "<group>"; };
 		D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceTests.swift; sourceTree = "<group>"; };
 		FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -83,6 +91,7 @@
 		4A475A78CE8CFEFF4D2F2FF6 /* Coordinator */ = {
 			isa = PBXGroup;
 			children = (
+				52544A587D6756E40D1487E4 /* AttendanceCoordinator.swift */,
 			);
 			path = Coordinator;
 			sourceTree = "<group>";
@@ -90,6 +99,8 @@
 		680C3DAC0ADB118B3BDCDCD9 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				35C17F111C461DB2D409E8E4 /* SettingsView.swift */,
+				FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -97,6 +108,7 @@
 		77FA70CFE407758A7CF1C49C /* Coordinator */ = {
 			isa = PBXGroup;
 			children = (
+				655149E789A7552FDC5F95D3 /* AttendanceCoordinatorTests.swift */,
 			);
 			path = Coordinator;
 			sourceTree = "<group>";
@@ -249,6 +261,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				467C76D4DCDA3D26BBCD14D0 /* AttendanceCoordinatorTests.swift in Sources */,
 				27CADA61FDD6578878753466 /* AttendanceStatusTests.swift in Sources */,
 				C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */,
 				B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */,
@@ -262,6 +275,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4B4322183C0794179CA41418 /* AppDelegate.swift in Sources */,
+				10D464105851EA7A34DAA73B /* AttendanceCoordinator.swift in Sources */,
 				0121222B49500D8AB7F099A6 /* AttendanceStatus.swift in Sources */,
 				64569A0AAC246B673567C0A2 /* CheckInState.swift in Sources */,
 				1B71FC9ED01892BA9F4A1D63 /* ColumnMap.swift in Sources */,
@@ -269,6 +283,8 @@
 				EB9DE5FD11EAE0FFDC43CCB9 /* MondayService.swift in Sources */,
 				6B4046F5C780EFB3B6E29287 /* NetworkMonitor.swift in Sources */,
 				67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */,
+				CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */,
+				2A456DBF578DF0ECB4F69069 /* SettingsWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
