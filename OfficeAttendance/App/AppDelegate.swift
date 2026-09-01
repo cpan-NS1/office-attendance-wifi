@@ -13,15 +13,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
+        let networkMonitor = NetworkMonitor()
         settingsWindowController = SettingsWindowController(
             credentialStore: credentialStore,
-            mondayService: mondayService
+            mondayService: mondayService,
+            networkMonitor: networkMonitor
         )
         settingsWindowController?.onSave = { [weak self] in
             self?.restartCoordinator()
         }
-
-        let networkMonitor = NetworkMonitor()
         coordinator = AttendanceCoordinator(
             credentialStore: credentialStore,
             networkMonitor: networkMonitor,

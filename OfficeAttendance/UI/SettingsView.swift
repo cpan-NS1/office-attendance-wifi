@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var credentialStore: CredentialStore
     let mondayService: MondayService
+    @ObservedObject var networkMonitor: NetworkMonitor
     var onSave: (() -> Void)?
 
     @State private var token = ""
@@ -42,16 +43,30 @@ struct SettingsView: View {
                     GroupBox("Monday.com") {
                         VStack(alignment: .leading, spacing: 8) {
                             LabeledField("API Token") {
-                                SecureField("required", text: $token)
-                                    .textFieldStyle(.roundedBorder)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    SecureField("required", text: $token)
+                                        .textFieldStyle(.roundedBorder)
+                                    Link("Get your token at ibm.monday.com/apps/manage/tokens",
+                                         destination: URL(string: "https://ibm.monday.com/apps/manage/tokens")!)
+                                        .font(.caption)
+                                        .foregroundColor(.accentColor)
+                                }
                             }
                             LabeledField("Board ID") {
                                 TextField("e.g. 1234567890", text: $boardId)
                                     .textFieldStyle(.roundedBorder)
+                                    .onChange(of: boardId) { newValue in
+                                        let filtered = newValue.filter(\.isNumber)
+                                        if filtered != newValue { boardId = filtered }
+                                    }
                             }
                             LabeledField("Employee ID") {
-                                TextField("name as shown on board", text: $employeeId)
+                                TextField("e.g. 1234567890", text: $employeeId)
                                     .textFieldStyle(.roundedBorder)
+                                    .onChange(of: employeeId) { newValue in
+                                        let filtered = newValue.filter(\.isNumber)
+                                        if filtered != newValue { employeeId = filtered }
+                                    }
                             }
                         }
                         .padding(.vertical, 4)
@@ -67,6 +82,17 @@ struct SettingsView: View {
                             LabeledField("Office DNS Domain") {
                                 TextField("e.g. ibm.com", text: $dnsDomain)
                                     .textFieldStyle(.roundedBorder)
+                            }
+                            Divider()
+                            LabeledField("Current IP") {
+                                Text(networkMonitor.detectedIP.isEmpty ? "—" : networkMonitor.detectedIP)
+                                    .foregroundColor(.secondary)
+                                    .textSelection(.enabled)
+                            }
+                            LabeledField("Current DNS") {
+                                Text(networkMonitor.detectedDNS.isEmpty ? "—" : networkMonitor.detectedDNS)
+                                    .foregroundColor(.secondary)
+                                    .textSelection(.enabled)
                             }
                         }
                         .padding(.vertical, 4)

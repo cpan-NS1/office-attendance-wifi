@@ -5,6 +5,8 @@ import SystemConfiguration
 
 final class NetworkMonitor: ObservableObject {
     @Published private(set) var isOnOfficeNetwork: Bool = false
+    @Published private(set) var detectedIP: String = ""
+    @Published private(set) var detectedDNS: String = ""
 
     private var monitor: NWPathMonitor?
     private let queue = DispatchQueue(label: "com.ibm.office-attendance.network")
@@ -15,8 +17,14 @@ final class NetworkMonitor: ObservableObject {
         let m = NWPathMonitor()
         m.pathUpdateHandler = { [weak self] path in
             guard let self, let creds = self.credentials else { return }
+            let ip = self.currentIPAddress() ?? ""
+            let dns = self.currentDNSDomain() ?? ""
             let result = self.evaluate(path: path, credentials: creds)
-            DispatchQueue.main.async { self.isOnOfficeNetwork = result }
+            DispatchQueue.main.async {
+                self.detectedIP = ip
+                self.detectedDNS = dns
+                self.isOnOfficeNetwork = result
+            }
         }
         m.start(queue: queue)
         monitor = m
@@ -36,8 +44,12 @@ final class NetworkMonitor: ObservableObject {
             || dnsMatches(domain: dns, suffix: credentials.dnsDomain)
     }
 
+    /// Requires the prefix to end with "." so that "9." matches "9.x.x.x"
+    /// but NOT "192.168.x.x" or a home network that happens to share a leading digit.
     func ipMatches(ip: String, prefix: String) -> Bool {
-        !ip.isEmpty && !prefix.isEmpty && ip.hasPrefix(prefix)
+        guard !ip.isEmpty, !prefix.isEmpty else { return false }
+        let p = prefix.hasSuffix(".") ? prefix : prefix + "."
+        return ip.hasPrefix(p)
     }
 
     func dnsMatches(domain: String, suffix: String) -> Bool {
