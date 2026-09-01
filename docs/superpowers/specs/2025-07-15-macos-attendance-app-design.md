@@ -110,9 +110,9 @@ All requests use `URLSession` with a 30-second timeout. On failure: log to a rot
 
 ### 5.3 Status Values
 
-`Office` · `WFH` · `WFH:Sickness` · `Vacation` · `LOA` · `Bank Holiday` · `Travel`
+`Office` · `WFH` · `Sick` · `Vacation` · `Holiday`
 
-These are the values written directly to Monday.com as status strings, matching the board's label configuration.
+These are the values written directly to Monday.com as status strings, matching the board's label configuration and the dropdown labels in §9.
 
 ---
 
