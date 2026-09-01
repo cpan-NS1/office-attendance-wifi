@@ -6,6 +6,11 @@ options:
   defaultConfig: Debug
   generateEmptyDirectories: true
 
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.0.0"
+
 settings:
   base:
     SWIFT_VERSION: "5.9"
@@ -30,6 +35,9 @@ targets:
         CODE_SIGN_STYLE: Automatic
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_ENTITLEMENTS: OfficeAttendance/OfficeAttendance.entitlements
+    dependencies:
+      - package: Sparkle
+        product: Sparkle
     info:
       path: OfficeAttendance/Info.plist
       properties:

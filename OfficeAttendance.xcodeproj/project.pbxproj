@@ -20,6 +20,7 @@
 		6B4046F5C780EFB3B6E29287 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F34155D8ABDFD5C9731414 /* NetworkMonitor.swift */; };
 		720B431EEBD0E34EA0D52AEA /* NetworkMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1BFC4747573FF55C3F554F7 /* NetworkMonitorTests.swift */; };
 		72D3380EF94DB4B50CE4BD8B /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45CF2ABEAF462E6B0CA8BC68 /* Logger.swift */; };
+		82DB2AEF656272E8703C6A27 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = C8A67A2CDAE4DD105B12D815 /* Sparkle */; };
 		8560102CCA7F203969ABB39D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4DE0096DA7D837A132C374 /* CredentialStore.swift */; };
 		9261DE08CA1F82A22360D815 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B08A90B7B82177941DA8BF2E /* NotificationService.swift */; };
 		B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */; };
@@ -63,6 +64,17 @@
 		FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		128471D19C7D6280707D6964 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				82DB2AEF656272E8703C6A27 /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0AE5A67D030DC706FBDB058B /* Utilities */ = {
@@ -216,6 +228,7 @@
 			buildConfigurationList = D0D45A92C2FD2BCA7A9C827A /* Build configuration list for PBXNativeTarget "OfficeAttendance" */;
 			buildPhases = (
 				C3D157F3DAD5E0D39FCF5716 /* Sources */,
+				128471D19C7D6280707D6964 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -223,6 +236,7 @@
 			);
 			name = OfficeAttendance;
 			packageProductDependencies = (
+				C8A67A2CDAE4DD105B12D815 /* Sparkle */,
 			);
 			productName = OfficeAttendance;
 			productReference = 2A0D428FB003762584DBA138 /* OfficeAttendance.app */;
@@ -251,6 +265,9 @@
 			);
 			mainGroup = 37E5E202B2552E303C43ADC4;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				999675970038CC28F2E9988C /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E4DF323F91F152AA0CE7C5B5 /* Products */;
 			projectDirPath = "";
@@ -535,6 +552,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		999675970038CC28F2E9988C /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C8A67A2CDAE4DD105B12D815 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 999675970038CC28F2E9988C /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F70EB0BF1508F180F96D886C /* Project object */;
 }
