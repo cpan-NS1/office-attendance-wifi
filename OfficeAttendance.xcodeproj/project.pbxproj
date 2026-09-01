@@ -1,0 +1,476 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3CCDCCEE7B804518B1202E38 /* OfficeAttendanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */; };
+		4B4322183C0794179CA41418 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85419957765EE5A708BD11B4 /* AppDelegate.swift */; };
+		67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F4108A7A0B7B2AC5D7BE42AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F70EB0BF1508F180F96D886C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6AD89212A2AA6B7F5BF1185;
+			remoteInfo = OfficeAttendance;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		247B519821475F58BAAB27BA /* OfficeAttendance.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OfficeAttendance.entitlements; sourceTree = "<group>"; };
+		2A0D428FB003762584DBA138 /* OfficeAttendance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OfficeAttendance.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		85419957765EE5A708BD11B4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		88421078DE83E9A232A6C2A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceApp.swift; sourceTree = "<group>"; };
+		D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceTests.swift; sourceTree = "<group>"; };
+		FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0AE5A67D030DC706FBDB058B /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		19883777DB59490CD1F77C44 /* OfficeAttendanceTests */ = {
+			isa = PBXGroup;
+			children = (
+				D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */,
+				77FA70CFE407758A7CF1C49C /* Coordinator */,
+				C491368760E7E6269D603BDB /* Models */,
+				8DC11313CFB13000B2447025 /* Services */,
+			);
+			path = OfficeAttendanceTests;
+			sourceTree = "<group>";
+		};
+		37E5E202B2552E303C43ADC4 = {
+			isa = PBXGroup;
+			children = (
+				D5DFCD6BBC8455E99E03E90F /* OfficeAttendance */,
+				19883777DB59490CD1F77C44 /* OfficeAttendanceTests */,
+				E4DF323F91F152AA0CE7C5B5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4A475A78CE8CFEFF4D2F2FF6 /* Coordinator */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Coordinator;
+			sourceTree = "<group>";
+		};
+		680C3DAC0ADB118B3BDCDCD9 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		77FA70CFE407758A7CF1C49C /* Coordinator */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Coordinator;
+			sourceTree = "<group>";
+		};
+		8DC11313CFB13000B2447025 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A83965B96B2B914A72AF68FC /* App */ = {
+			isa = PBXGroup;
+			children = (
+				85419957765EE5A708BD11B4 /* AppDelegate.swift */,
+				CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		C491368760E7E6269D603BDB /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D5DFCD6BBC8455E99E03E90F /* OfficeAttendance */ = {
+			isa = PBXGroup;
+			children = (
+				88421078DE83E9A232A6C2A2 /* Info.plist */,
+				247B519821475F58BAAB27BA /* OfficeAttendance.entitlements */,
+				A83965B96B2B914A72AF68FC /* App */,
+				4A475A78CE8CFEFF4D2F2FF6 /* Coordinator */,
+				FB5E43454E5EC2A9602BB1BE /* Models */,
+				F894910B542A40FF565A8E52 /* Services */,
+				680C3DAC0ADB118B3BDCDCD9 /* UI */,
+				0AE5A67D030DC706FBDB058B /* Utilities */,
+			);
+			path = OfficeAttendance;
+			sourceTree = "<group>";
+		};
+		E4DF323F91F152AA0CE7C5B5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2A0D428FB003762584DBA138 /* OfficeAttendance.app */,
+				FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F894910B542A40FF565A8E52 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		FB5E43454E5EC2A9602BB1BE /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A30D8B798DC2DF6D0496F085 /* OfficeAttendanceTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE51F2E3D9FF154F5AFEE057 /* Build configuration list for PBXNativeTarget "OfficeAttendanceTests" */;
+			buildPhases = (
+				70A0B8D782920C11B6FC1346 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9BC2CF1AC94A82796B6E7775 /* PBXTargetDependency */,
+			);
+			name = OfficeAttendanceTests;
+			packageProductDependencies = (
+			);
+			productName = OfficeAttendanceTests;
+			productReference = FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D6AD89212A2AA6B7F5BF1185 /* OfficeAttendance */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D0D45A92C2FD2BCA7A9C827A /* Build configuration list for PBXNativeTarget "OfficeAttendance" */;
+			buildPhases = (
+				C3D157F3DAD5E0D39FCF5716 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OfficeAttendance;
+			packageProductDependencies = (
+			);
+			productName = OfficeAttendance;
+			productReference = 2A0D428FB003762584DBA138 /* OfficeAttendance.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F70EB0BF1508F180F96D886C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					D6AD89212A2AA6B7F5BF1185 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 80D23E5167B708392EF0EEDD /* Build configuration list for PBXProject "OfficeAttendance" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 37E5E202B2552E303C43ADC4;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E4DF323F91F152AA0CE7C5B5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D6AD89212A2AA6B7F5BF1185 /* OfficeAttendance */,
+				A30D8B798DC2DF6D0496F085 /* OfficeAttendanceTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		70A0B8D782920C11B6FC1346 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3CCDCCEE7B804518B1202E38 /* OfficeAttendanceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C3D157F3DAD5E0D39FCF5716 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B4322183C0794179CA41418 /* AppDelegate.swift in Sources */,
+				67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9BC2CF1AC94A82796B6E7775 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6AD89212A2AA6B7F5BF1185 /* OfficeAttendance */;
+			targetProxy = F4108A7A0B7B2AC5D7BE42AE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2C5355722F9C178E25DD534D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ibm.office-attendance";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		2C965E9A79CDC996D044D62D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = OfficeAttendance/OfficeAttendance.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = OfficeAttendance/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ibm.office-attendance";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		5278250BA2D5DBB84BB29F6B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = OfficeAttendance/OfficeAttendance.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = OfficeAttendance/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ibm.office-attendance";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		8F3B581E62D7CD6CDAEC3001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ibm.office-attendance";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		93E0828DB11D7BF3BE61A09C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ibm.office-attendance-tests";
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OfficeAttendance.app/Contents/MacOS/OfficeAttendance";
+			};
+			name = Debug;
+		};
+		A463B28C4123C5D52973D9EB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ibm.office-attendance-tests";
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OfficeAttendance.app/Contents/MacOS/OfficeAttendance";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		80D23E5167B708392EF0EEDD /* Build configuration list for PBXProject "OfficeAttendance" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C5355722F9C178E25DD534D /* Debug */,
+				8F3B581E62D7CD6CDAEC3001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D0D45A92C2FD2BCA7A9C827A /* Build configuration list for PBXNativeTarget "OfficeAttendance" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C965E9A79CDC996D044D62D /* Debug */,
+				5278250BA2D5DBB84BB29F6B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DE51F2E3D9FF154F5AFEE057 /* Build configuration list for PBXNativeTarget "OfficeAttendanceTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				93E0828DB11D7BF3BE61A09C /* Debug */,
+				A463B28C4123C5D52973D9EB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F70EB0BF1508F180F96D886C /* Project object */;
+}

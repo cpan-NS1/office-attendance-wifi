@@ -1,0 +1,56 @@
+name: OfficeAttendance
+options:
+  bundleIdPrefix: com.ibm
+  deploymentTarget:
+    macOS: "13.0"
+  defaultConfig: Debug
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    PRODUCT_BUNDLE_IDENTIFIER: com.ibm.office-attendance
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  OfficeAttendance:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: OfficeAttendance
+        excludes:
+          - "**/*.md"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ibm.office-attendance
+        INFOPLIST_FILE: OfficeAttendance/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_ENTITLEMENTS: OfficeAttendance/OfficeAttendance.entitlements
+    info:
+      path: OfficeAttendance/Info.plist
+      properties:
+        CFBundleName: OfficeAttendance
+        CFBundleDisplayName: Office Attendance
+        CFBundleIdentifier: com.ibm.office-attendance
+        CFBundleVersion: "1"
+        CFBundleShortVersionString: "1.0.0"
+        LSUIElement: true
+        NSUserNotificationAlertStyle: alert
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+
+  OfficeAttendanceTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: OfficeAttendanceTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ibm.office-attendance-tests
+    dependencies:
+      - target: OfficeAttendance
