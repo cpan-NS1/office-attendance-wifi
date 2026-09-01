@@ -14,6 +14,12 @@
 		4B4322183C0794179CA41418 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85419957765EE5A708BD11B4 /* AppDelegate.swift */; };
 		64569A0AAC246B673567C0A2 /* CheckInState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6197D6C68BE9EC790BFF2E12 /* CheckInState.swift */; };
 		67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */; };
+		6B4046F5C780EFB3B6E29287 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F34155D8ABDFD5C9731414 /* NetworkMonitor.swift */; };
+		720B431EEBD0E34EA0D52AEA /* NetworkMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1BFC4747573FF55C3F554F7 /* NetworkMonitorTests.swift */; };
+		8560102CCA7F203969ABB39D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4DE0096DA7D837A132C374 /* CredentialStore.swift */; };
+		B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */; };
+		C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */; };
+		EB9DE5FD11EAE0FFDC43CCB9 /* MondayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8985095425240345AD2049E5 /* MondayService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,11 +36,17 @@
 		05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceStatusTests.swift; sourceTree = "<group>"; };
 		247B519821475F58BAAB27BA /* OfficeAttendance.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OfficeAttendance.entitlements; sourceTree = "<group>"; };
 		2A0D428FB003762584DBA138 /* OfficeAttendance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OfficeAttendance.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		44F34155D8ABDFD5C9731414 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		55AB2E3EC8D771E20DA746B1 /* AttendanceStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceStatus.swift; sourceTree = "<group>"; };
 		5DC8A2DE514A0FAE210E99FE /* ColumnMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnMap.swift; sourceTree = "<group>"; };
 		6197D6C68BE9EC790BFF2E12 /* CheckInState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInState.swift; sourceTree = "<group>"; };
+		6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MondayServiceTests.swift; sourceTree = "<group>"; };
 		85419957765EE5A708BD11B4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		88421078DE83E9A232A6C2A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8985095425240345AD2049E5 /* MondayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MondayService.swift; sourceTree = "<group>"; };
+		96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStoreTests.swift; sourceTree = "<group>"; };
+		B1BFC4747573FF55C3F554F7 /* NetworkMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitorTests.swift; sourceTree = "<group>"; };
+		BB4DE0096DA7D837A132C374 /* CredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStore.swift; sourceTree = "<group>"; };
 		CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceApp.swift; sourceTree = "<group>"; };
 		D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceTests.swift; sourceTree = "<group>"; };
 		FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -92,6 +104,9 @@
 		8DC11313CFB13000B2447025 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */,
+				6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */,
+				B1BFC4747573FF55C3F554F7 /* NetworkMonitorTests.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -140,6 +155,9 @@
 		F894910B542A40FF565A8E52 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BB4DE0096DA7D837A132C374 /* CredentialStore.swift */,
+				8985095425240345AD2049E5 /* MondayService.swift */,
+				44F34155D8ABDFD5C9731414 /* NetworkMonitor.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -232,6 +250,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				27CADA61FDD6578878753466 /* AttendanceStatusTests.swift in Sources */,
+				C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */,
+				B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */,
+				720B431EEBD0E34EA0D52AEA /* NetworkMonitorTests.swift in Sources */,
 				3CCDCCEE7B804518B1202E38 /* OfficeAttendanceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -244,6 +265,9 @@
 				0121222B49500D8AB7F099A6 /* AttendanceStatus.swift in Sources */,
 				64569A0AAC246B673567C0A2 /* CheckInState.swift in Sources */,
 				1B71FC9ED01892BA9F4A1D63 /* ColumnMap.swift in Sources */,
+				8560102CCA7F203969ABB39D /* CredentialStore.swift in Sources */,
+				EB9DE5FD11EAE0FFDC43CCB9 /* MondayService.swift in Sources */,
+				6B4046F5C780EFB3B6E29287 /* NetworkMonitor.swift in Sources */,
 				67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

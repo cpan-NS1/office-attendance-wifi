@@ -1,0 +1,78 @@
+import Foundation
+import Network
+import Combine
+import SystemConfiguration
+
+final class NetworkMonitor: ObservableObject {
+    @Published private(set) var isOnOfficeNetwork: Bool = false
+
+    private var monitor: NWPathMonitor?
+    private let queue = DispatchQueue(label: "com.ibm.office-attendance.network")
+    private var credentials: CredentialStore.Credentials?
+
+    func start(credentials: CredentialStore.Credentials) {
+        self.credentials = credentials
+        let m = NWPathMonitor()
+        m.pathUpdateHandler = { [weak self] path in
+            guard let self, let creds = self.credentials else { return }
+            let result = self.evaluate(path: path, credentials: creds)
+            DispatchQueue.main.async { self.isOnOfficeNetwork = result }
+        }
+        m.start(queue: queue)
+        monitor = m
+    }
+
+    func stop() {
+        monitor?.cancel()
+        monitor = nil
+    }
+
+    // MARK: - Testable helpers
+
+    func evaluate(path: NWPath, credentials: CredentialStore.Credentials) -> Bool {
+        let ip = currentIPAddress() ?? ""
+        let dns = currentDNSDomain() ?? ""
+        return ipMatches(ip: ip, prefix: credentials.ipPrefix)
+            || dnsMatches(domain: dns, suffix: credentials.dnsDomain)
+    }
+
+    func ipMatches(ip: String, prefix: String) -> Bool {
+        !ip.isEmpty && !prefix.isEmpty && ip.hasPrefix(prefix)
+    }
+
+    func dnsMatches(domain: String, suffix: String) -> Bool {
+        !domain.isEmpty && !suffix.isEmpty && domain.contains(suffix)
+    }
+
+    private func currentIPAddress() -> String? {
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&ifaddr) == 0 else { return nil }
+        defer { freeifaddrs(ifaddr) }
+        var addr = ifaddr
+        while let current = addr {
+            let ifa = current.pointee
+            if ifa.ifa_addr.pointee.sa_family == UInt8(AF_INET),
+               String(cString: ifa.ifa_name) == "en0" {
+                var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                getnameinfo(ifa.ifa_addr, socklen_t(ifa.ifa_addr.pointee.sa_len),
+                            &hostname, socklen_t(hostname.count),
+                            nil, 0, NI_NUMERICHOST)
+                return String(cString: hostname)
+            }
+            addr = current.pointee.ifa_next
+        }
+        return nil
+    }
+
+    private func currentDNSDomain() -> String? {
+        // Read the first DNS search domain via SystemConfiguration
+        guard let store = SCDynamicStoreCreate(nil, "OfficeAttendance" as CFString, nil, nil) else {
+            return nil
+        }
+        let key = SCDynamicStoreKeyCreateNetworkGlobalEntity(
+            nil, kSCDynamicStoreDomainState, kSCEntNetDNS)
+        guard let dict = SCDynamicStoreCopyValue(store, key) as? [String: Any],
+              let domains = dict["SearchDomains"] as? [String] else { return nil }
+        return domains.first
+    }
+}
