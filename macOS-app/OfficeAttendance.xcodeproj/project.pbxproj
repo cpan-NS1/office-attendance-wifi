@@ -25,6 +25,7 @@
 		B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */; };
 		C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */; };
 		CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C17F111C461DB2D409E8E4 /* SettingsView.swift */; };
+		AA11BB22CC33DD44EE55FF66 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF77 /* Assets.xcassets */; };
 		EB9DE5FD11EAE0FFDC43CCB9 /* MondayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8985095425240345AD2049E5 /* MondayService.swift */; };
 /* End PBXBuildFile section */
 
@@ -61,8 +62,20 @@
 		CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceApp.swift; sourceTree = "<group>"; };
 		D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceTests.swift; sourceTree = "<group>"; };
 		FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA11BB22CC33DD44EE55FF77 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA11BB22CC33DD44EE55FF88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA11BB22CC33DD44EE55FF66 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		128471D19C7D6280707D6964 /* Frameworks */ = {
@@ -158,6 +171,7 @@
 		D5DFCD6BBC8455E99E03E90F /* OfficeAttendance */ = {
 			isa = PBXGroup;
 			children = (
+				AA11BB22CC33DD44EE55FF77 /* Assets.xcassets */,
 				88421078DE83E9A232A6C2A2 /* Info.plist */,
 				247B519821475F58BAAB27BA /* OfficeAttendance.entitlements */,
 				A83965B96B2B914A72AF68FC /* App */,
@@ -225,6 +239,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D0D45A92C2FD2BCA7A9C827A /* Build configuration list for PBXNativeTarget "OfficeAttendance" */;
 			buildPhases = (
+				AA11BB22CC33DD44EE55FF88 /* Resources */,
 				C3D157F3DAD5E0D39FCF5716 /* Sources */,
 				128471D19C7D6280707D6964 /* Frameworks */,
 			);
