@@ -7,8 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0121222B49500D8AB7F099A6 /* AttendanceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55AB2E3EC8D771E20DA746B1 /* AttendanceStatus.swift */; };
+		1B71FC9ED01892BA9F4A1D63 /* ColumnMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DC8A2DE514A0FAE210E99FE /* ColumnMap.swift */; };
+		27CADA61FDD6578878753466 /* AttendanceStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */; };
 		3CCDCCEE7B804518B1202E38 /* OfficeAttendanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */; };
 		4B4322183C0794179CA41418 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85419957765EE5A708BD11B4 /* AppDelegate.swift */; };
+		64569A0AAC246B673567C0A2 /* CheckInState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6197D6C68BE9EC790BFF2E12 /* CheckInState.swift */; };
 		67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */; };
 /* End PBXBuildFile section */
 
@@ -23,8 +27,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceStatusTests.swift; sourceTree = "<group>"; };
 		247B519821475F58BAAB27BA /* OfficeAttendance.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OfficeAttendance.entitlements; sourceTree = "<group>"; };
 		2A0D428FB003762584DBA138 /* OfficeAttendance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OfficeAttendance.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		55AB2E3EC8D771E20DA746B1 /* AttendanceStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceStatus.swift; sourceTree = "<group>"; };
+		5DC8A2DE514A0FAE210E99FE /* ColumnMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnMap.swift; sourceTree = "<group>"; };
+		6197D6C68BE9EC790BFF2E12 /* CheckInState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInState.swift; sourceTree = "<group>"; };
 		85419957765EE5A708BD11B4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		88421078DE83E9A232A6C2A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceApp.swift; sourceTree = "<group>"; };
@@ -100,6 +108,7 @@
 		C491368760E7E6269D603BDB /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -138,6 +147,9 @@
 		FB5E43454E5EC2A9602BB1BE /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				55AB2E3EC8D771E20DA746B1 /* AttendanceStatus.swift */,
+				6197D6C68BE9EC790BFF2E12 /* CheckInState.swift */,
+				5DC8A2DE514A0FAE210E99FE /* ColumnMap.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -219,6 +231,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27CADA61FDD6578878753466 /* AttendanceStatusTests.swift in Sources */,
 				3CCDCCEE7B804518B1202E38 /* OfficeAttendanceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -228,6 +241,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				4B4322183C0794179CA41418 /* AppDelegate.swift in Sources */,
+				0121222B49500D8AB7F099A6 /* AttendanceStatus.swift in Sources */,
+				64569A0AAC246B673567C0A2 /* CheckInState.swift in Sources */,
+				1B71FC9ED01892BA9F4A1D63 /* ColumnMap.swift in Sources */,
 				67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
