@@ -35,63 +35,110 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        Form {
-            Section("Monday.com") {
-                SecureField("API Token", text: $token)
-                TextField("Board ID", text: $boardId)
-                TextField("Employee ID (name as shown on board)", text: $employeeId)
-            }
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 16) {
 
-            Section("Network Detection") {
-                TextField("Office IP Prefix (e.g. 9.)", text: $ipPrefix)
-                TextField("Office DNS Domain (e.g. ibm.com)", text: $dnsDomain)
-            }
+                    // MARK: Monday.com
+                    GroupBox("Monday.com") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            LabeledField("API Token") {
+                                SecureField("required", text: $token)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                            LabeledField("Board ID") {
+                                TextField("e.g. 1234567890", text: $boardId)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                            LabeledField("Employee ID") {
+                                TextField("name as shown on board", text: $employeeId)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
 
-            Section("Board Verification") {
-                Button("Verify Board") { Task { await verifyBoard() } }
-                    .disabled(token.isEmpty || boardId.isEmpty)
-                switch verifyStatus {
-                case .idle: EmptyView()
-                case .loading: ProgressView("Checking…")
-                case .success(let map):
-                    Text("✅ Monday(\(map.mondayColumnId)) Tue(\(map.tuesdayColumnId)) Wed(\(map.wednesdayColumnId)) Thu(\(map.thursdayColumnId)) Fri(\(map.fridayColumnId))")
-                        .font(.caption).foregroundColor(.secondary)
-                case .failure(let msg):
-                    Text("❌ \(msg)").font(.caption).foregroundColor(.red)
-                }
+                    // MARK: Network Detection
+                    GroupBox("Network Detection") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            LabeledField("Office IP Prefix") {
+                                TextField("e.g. 9.", text: $ipPrefix)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                            LabeledField("Office DNS Domain") {
+                                TextField("e.g. ibm.com", text: $dnsDomain)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
 
-                DisclosureGroup("Advanced (manual column IDs)", isExpanded: $showAdvanced) {
-                    TextField("Employee name column ID", text: $manualEmployeeCol)
-                    TextField("Week Start column ID", text: $manualWeekStartCol)
-                    TextField("Monday column ID", text: $manualMon)
-                    TextField("Tuesday column ID", text: $manualTue)
-                    TextField("Wednesday column ID", text: $manualWed)
-                    TextField("Thursday column ID", text: $manualThu)
-                    TextField("Friday column ID", text: $manualFri)
-                }
+                    // MARK: Board Verification
+                    GroupBox("Board Verification") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Button("Verify Board") { Task { await verifyBoard() } }
+                                .disabled(token.isEmpty || boardId.isEmpty)
+
+                            switch verifyStatus {
+                            case .idle:
+                                EmptyView()
+                            case .loading:
+                                ProgressView("Checking…")
+                            case .success(let map):
+                                Text("✅ Mon(\(map.mondayColumnId)) Tue(\(map.tuesdayColumnId)) Wed(\(map.wednesdayColumnId)) Thu(\(map.thursdayColumnId)) Fri(\(map.fridayColumnId))")
+                                    .font(.caption).foregroundColor(.secondary)
+                            case .failure(let msg):
+                                Text("❌ \(msg)").font(.caption).foregroundColor(.red)
+                            }
+
+                            DisclosureGroup("Advanced — manual column IDs", isExpanded: $showAdvanced) {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    LabeledField("Employee col") {
+                                        TextField("auto-detected", text: $manualEmployeeCol)
+                                            .textFieldStyle(.roundedBorder)
+                                    }
+                                    LabeledField("Week Start col") {
+                                        TextField("auto-detected", text: $manualWeekStartCol)
+                                            .textFieldStyle(.roundedBorder)
+                                    }
+                                    LabeledField("Monday col")    { TextField("", text: $manualMon).textFieldStyle(.roundedBorder) }
+                                    LabeledField("Tuesday col")   { TextField("", text: $manualTue).textFieldStyle(.roundedBorder) }
+                                    LabeledField("Wednesday col") { TextField("", text: $manualWed).textFieldStyle(.roundedBorder) }
+                                    LabeledField("Thursday col")  { TextField("", text: $manualThu).textFieldStyle(.roundedBorder) }
+                                    LabeledField("Friday col")    { TextField("", text: $manualFri).textFieldStyle(.roundedBorder) }
+                                }
+                                .padding(.top, 6)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
             }
-        }
-        .formStyle(.grouped)
-        .padding()
-        .frame(width: 480)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+            .padding(20)
+
+            // MARK: Bottom button bar
+            Divider()
+            HStack {
                 Button("Cancel") { NSApp.keyWindow?.close() }
-            }
-            ToolbarItem(placement: .confirmationAction) {
+                    .keyboardShortcut(.cancelAction)
+                Spacer()
                 Button("Save") { saveCredentials() }
+                    .keyboardShortcut(.defaultAction)
                     .disabled(!canSave)
             }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
         }
+        .frame(width: 480)
+        .fixedSize(horizontal: false, vertical: true)
         .onAppear { loadExisting() }
     }
+
+    // MARK: - Actions
 
     private func verifyBoard() async {
         verifyStatus = .loading
         do {
             let map = try await mondayService.discoverColumns(boardId: boardId, token: token)
             columnMap = map
-            // Pre-fill advanced fields
             manualEmployeeCol = map.employeeColumnId
             manualWeekStartCol = map.weekStartColumnId
             manualMon = map.mondayColumnId
@@ -107,15 +154,16 @@ struct SettingsView: View {
 
     private func saveCredentials() {
         guard case .success(var map) = verifyStatus else { return }
-        // Apply manual overrides if advanced fields were edited
         if showAdvanced {
-            map = ColumnMap(employeeColumnId: manualEmployeeCol.isEmpty ? map.employeeColumnId : manualEmployeeCol,
-                            weekStartColumnId: manualWeekStartCol.isEmpty ? map.weekStartColumnId : manualWeekStartCol,
-                            mondayColumnId: manualMon.isEmpty ? map.mondayColumnId : manualMon,
-                            tuesdayColumnId: manualTue.isEmpty ? map.tuesdayColumnId : manualTue,
-                            wednesdayColumnId: manualWed.isEmpty ? map.wednesdayColumnId : manualWed,
-                            thursdayColumnId: manualThu.isEmpty ? map.thursdayColumnId : manualThu,
-                            fridayColumnId: manualFri.isEmpty ? map.fridayColumnId : manualFri)
+            map = ColumnMap(
+                employeeColumnId:  manualEmployeeCol.isEmpty  ? map.employeeColumnId  : manualEmployeeCol,
+                weekStartColumnId: manualWeekStartCol.isEmpty ? map.weekStartColumnId : manualWeekStartCol,
+                mondayColumnId:    manualMon.isEmpty ? map.mondayColumnId    : manualMon,
+                tuesdayColumnId:   manualTue.isEmpty ? map.tuesdayColumnId   : manualTue,
+                wednesdayColumnId: manualWed.isEmpty ? map.wednesdayColumnId : manualWed,
+                thursdayColumnId:  manualThu.isEmpty ? map.thursdayColumnId  : manualThu,
+                fridayColumnId:    manualFri.isEmpty ? map.fridayColumnId    : manualFri
+            )
         }
         try? credentialStore.save(token: token, boardId: boardId, employeeId: employeeId,
                                   ipPrefix: ipPrefix, dnsDomain: dnsDomain)
@@ -131,5 +179,24 @@ struct SettingsView: View {
         employeeId = creds.employeeId
         ipPrefix = creds.ipPrefix
         dnsDomain = creds.dnsDomain
+    }
+}
+
+// MARK: - Helper
+
+private struct LabeledField<Content: View>: View {
+    let label: String
+    let content: Content
+    init(_ label: String, @ViewBuilder content: () -> Content) {
+        self.label = label
+        self.content = content()
+    }
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(label)
+                .frame(width: 130, alignment: .trailing)
+                .foregroundColor(.secondary)
+            content
+        }
     }
 }

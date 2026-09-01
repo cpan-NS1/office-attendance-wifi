@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 import Combine
-import Sparkle
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
@@ -10,7 +9,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var mondayService = MondayService()
     private var coordinator: AttendanceCoordinator?
     private var cancellables = Set<AnyCancellable>()
-    private var updaterController: SPUStandardUpdaterController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -53,7 +51,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(openSettings),
                                                name: .openSettings, object: nil)
         
-        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
     }
 
     @MainActor private func buildMenu() -> NSMenu {

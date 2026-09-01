@@ -9,12 +9,13 @@ final class SettingsWindowController: NSWindowController {
     init(credentialStore: CredentialStore, mondayService: MondayService) {
         self.credentialStore = credentialStore
         self.mondayService = mondayService
-        let settingsView = SettingsView(credentialStore: credentialStore,
-                                        mondayService: mondayService)
-        let hostingController = NSHostingController(rootView: settingsView)
-        let window = NSWindow(contentViewController: hostingController)
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 420),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
         window.title = "Office Attendance Settings"
-        window.styleMask = [.titled, .closable]
         window.center()
         super.init(window: window)
     }
@@ -22,6 +23,14 @@ final class SettingsWindowController: NSWindowController {
     required init?(coder: NSCoder) { fatalError() }
 
     func show() {
+        // Rebuild the view each time so onSave is always current
+        let settingsView = SettingsView(
+            credentialStore: credentialStore,
+            mondayService: mondayService,
+            onSave: onSave
+        )
+        let hostingController = NSHostingController(rootView: settingsView)
+        window?.contentViewController = hostingController
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }

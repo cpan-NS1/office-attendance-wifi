@@ -2,14 +2,14 @@ import Foundation
 
 enum MondayError: Error, LocalizedError {
     case noRowFound
-    case columnNotFound
+    case columnNotFound(String)
     case apiError(String)
 
     var errorDescription: String? {
         switch self {
-        case .noRowFound:        return "No attendance row found for this week."
-        case .columnNotFound:    return "Day column not found in column map."
-        case .apiError(let msg): return "Monday.com API error: \(msg)"
+        case .noRowFound:               return "No attendance row found for this week."
+        case .columnNotFound(let name): return "Column \"\(name)\" not found on the board. Check your board column titles."
+        case .apiError(let msg):        return "Monday.com API error: \(msg)"
         }
     }
 }
@@ -45,13 +45,23 @@ final class MondayService {
         func id(forTitle title: String) throws -> String {
             guard let col = columns.first(where: { ($0["title"] as? String) == title }),
                   let id = col["id"] as? String else {
-                throw MondayError.columnNotFound
+                throw MondayError.columnNotFound(title)
             }
             return id
         }
 
+        // Try common employee column name variants
+        func employeeId() throws -> String {
+            for title in ["Employee ID", "Employee name", "Employee", "Name"] {
+                if let col = columns.first(where: { ($0["title"] as? String) == title }),
+                   let id = col["id"] as? String { return id }
+            }
+            let available = columns.compactMap { $0["title"] as? String }.joined(separator: ", ")
+            throw MondayError.columnNotFound("employee column (tried: Employee ID, Employee name, Employee, Name). Available: \(available)")
+        }
+
         return ColumnMap(
-            employeeColumnId:   try id(forTitle: "Employee name"),
+            employeeColumnId:   try employeeId(),
             weekStartColumnId:  try id(forTitle: "Week Start"),
             mondayColumnId:     try id(forTitle: "Monday"),
             tuesdayColumnId:    try id(forTitle: "Tuesday"),
@@ -71,7 +81,7 @@ final class MondayService {
         let weekday = calendar.component(.weekday, from: today)
 
         guard let dayColumnId = columnMap.columnId(forWeekday: weekday) else {
-            throw MondayError.columnNotFound
+            throw MondayError.columnNotFound("today's weekday")
         }
 
         // Step 1: find the item_id for this person's row this week
