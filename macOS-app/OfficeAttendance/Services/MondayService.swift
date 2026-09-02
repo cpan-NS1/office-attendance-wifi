@@ -143,30 +143,39 @@ final class MondayService {
             (columnMap.fridayColumnId,    4)
         ]
 
-        for weekStart in weekStarts {
-            let weekStartStr = weekStartDateString(for: weekStart)
+        try await withThrowingTaskGroup(of: [String: AttendanceStatus].self) { group in
+            for weekStart in weekStarts {
+                let weekStartStr = weekStartDateString(for: weekStart)
+                group.addTask {
+                    // Find the row for this week; skip if not found
+                    guard let itemId = try? await self.findItemId(
+                        boardId: boardId,
+                        employeeId: employeeId,
+                        weekStartDate: weekStartStr,
+                        columnMap: columnMap,
+                        token: token
+                    ) else { return [:] }
 
-            // Find the row for this week; skip if not found
-            guard let itemId = try? await findItemId(
-                boardId: boardId,
-                employeeId: employeeId,
-                weekStartDate: weekStartStr,
-                columnMap: columnMap,
-                token: token
-            ) else { continue }
+                    let dayValues = try await self.fetchWeekDayValues(
+                        itemId: itemId,
+                        columnMap: columnMap,
+                        token: token
+                    )
 
-            let dayValues = try await fetchWeekDayValues(
-                itemId: itemId,
-                columnMap: columnMap,
-                token: token
-            )
+                    var weekResult: [String: AttendanceStatus] = [:]
+                    for (colId, dayOffset) in colIds {
+                        guard let text = dayValues[colId],
+                              let status = AttendanceStatus.allCases.first(where: { $0.mondayValue == text }),
+                              let dayDate = calendar.date(byAdding: .day, value: dayOffset, to: weekStart)
+                        else { continue }
+                        weekResult[isoFormatter.string(from: dayDate)] = status
+                    }
+                    return weekResult
+                }
+            }
 
-            for (colId, dayOffset) in colIds {
-                guard let text = dayValues[colId],
-                      let status = AttendanceStatus.allCases.first(where: { $0.mondayValue == text }),
-                      let dayDate = calendar.date(byAdding: .day, value: dayOffset, to: weekStart)
-                else { continue }
-                result[isoFormatter.string(from: dayDate)] = status
+            for try await weekResult in group {
+                result.merge(weekResult) { _, remote in remote }
             }
         }
 
