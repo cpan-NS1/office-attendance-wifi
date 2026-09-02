@@ -32,6 +32,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ibm.office-attendance
         INFOPLIST_FILE: OfficeAttendance/Info.plist
+        CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION: YES
         CODE_SIGN_STYLE: Automatic
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_ENTITLEMENTS: OfficeAttendance/OfficeAttendance.entitlements
@@ -50,6 +51,8 @@ targets:
         NSUserNotificationAlertStyle: alert
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
+        SUFeedURL: https://github.com/cpan-NS1/office-attendance-wifi/releases/latest/download/appcast.xml
+        SUPublicEDKey: M6oNnpuRZmpXgfvmRly6CmtwzLX81FqD3PbjFHaH2oM=
 
   OfficeAttendanceTests:
     type: bundle.unit-test

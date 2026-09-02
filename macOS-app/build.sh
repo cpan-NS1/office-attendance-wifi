@@ -148,3 +148,24 @@ rm -f "$TMP_DMG"
 echo ""
 echo "✅ Done! DMG created at: $DMG_PATH"
 echo "   App version: $(defaults read "$APP_PATH/Contents/Info" CFBundleShortVersionString)"
+
+# ── Sign DMG for Sparkle ──────────────────────────────────────────────────────
+SIGN_UPDATE="$(find ~/Library/Developer/Xcode/DerivedData -name "sign_update" 2>/dev/null | head -1)"
+if [[ -n "$SIGN_UPDATE" && "$CONFIGURATION" == "Release" ]]; then
+  echo ""
+  echo "▶ Signing DMG for Sparkle..."
+  SPARKLE_SIG=$("$SIGN_UPDATE" "$DMG_PATH")
+  DMG_SIZE=$(stat -f%z "$DMG_PATH")
+  echo ""
+  echo "── appcast.xml snippet ──────────────────────────────────────────────────"
+  echo "<enclosure"
+  echo "  url=\"https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v${MARKETING_VERSION}/${DMG_NAME}\""
+  echo "  sparkle:version=\"${CURRENT_PROJECT_VERSION}\""
+  echo "  sparkle:shortVersionString=\"${MARKETING_VERSION}\""
+  echo "  $SPARKLE_SIG"
+  echo "  length=\"${DMG_SIZE}\""
+  echo "  type=\"application/octet-stream\"/>"
+  echo "─────────────────────────────────────────────────────────────────────────"
+else
+  [[ "$CONFIGURATION" == "Release" ]] && echo "⚠️  sign_update not found — skipping Sparkle signature. Build Sparkle first."
+fi

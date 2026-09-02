@@ -22,12 +22,13 @@
 		72D3380EF94DB4B50CE4BD8B /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45CF2ABEAF462E6B0CA8BC68 /* Logger.swift */; };
 		8560102CCA7F203969ABB39D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4DE0096DA7D837A132C374 /* CredentialStore.swift */; };
 		9261DE08CA1F82A22360D815 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B08A90B7B82177941DA8BF2E /* NotificationService.swift */; };
-		B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */; };
-		C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */; };
-		CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C17F111C461DB2D409E8E4 /* SettingsView.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F3 /* HistoryView.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F4 /* HistoryWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F5 /* HistoryWindowController.swift */; };
 		AA11BB22CC33DD44EE55FF66 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF77 /* Assets.xcassets */; };
+		B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */; };
+		C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */; };
+		CB5BEDC7304852AD00606CD2 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = CB5BEDC6304852AD00606CD2 /* Sparkle */; };
+		CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C17F111C461DB2D409E8E4 /* SettingsView.swift */; };
 		EB9DE5FD11EAE0FFDC43CCB9 /* MondayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8985095425240345AD2049E5 /* MondayService.swift */; };
 /* End PBXBuildFile section */
 
@@ -58,34 +59,24 @@
 		88421078DE83E9A232A6C2A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8985095425240345AD2049E5 /* MondayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MondayService.swift; sourceTree = "<group>"; };
 		96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStoreTests.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F3 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F5 /* HistoryWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryWindowController.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF77 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B08A90B7B82177941DA8BF2E /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		B1BFC4747573FF55C3F554F7 /* NetworkMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitorTests.swift; sourceTree = "<group>"; };
 		BB4DE0096DA7D837A132C374 /* CredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStore.swift; sourceTree = "<group>"; };
 		CAF8B40941DB9D0DDF81D0D0 /* OfficeAttendanceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceApp.swift; sourceTree = "<group>"; };
 		D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeAttendanceTests.swift; sourceTree = "<group>"; };
 		FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA11BB22CC33DD44EE55FF77 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F3 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F5 /* HistoryWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXResourcesBuildPhase section */
-		AA11BB22CC33DD44EE55FF88 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA11BB22CC33DD44EE55FF66 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		128471D19C7D6280707D6964 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB5BEDC7304852AD00606CD2 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,6 +246,7 @@
 			);
 			name = OfficeAttendance;
 			packageProductDependencies = (
+				CB5BEDC6304852AD00606CD2 /* Sparkle */,
 			);
 			productName = OfficeAttendance;
 			productReference = 2A0D428FB003762584DBA138 /* OfficeAttendance.app */;
@@ -284,6 +276,7 @@
 			mainGroup = 37E5E202B2552E303C43ADC4;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				CB5BEDC5304852AD00606CD2 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E4DF323F91F152AA0CE7C5B5 /* Products */;
@@ -295,6 +288,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA11BB22CC33DD44EE55FF88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA11BB22CC33DD44EE55FF66 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		70A0B8D782920C11B6FC1346 /* Sources */ = {
@@ -413,6 +417,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = OfficeAttendance/OfficeAttendance.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -432,6 +437,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = OfficeAttendance/OfficeAttendance.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -572,6 +578,24 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		CB5BEDC5304852AD00606CD2 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CB5BEDC6304852AD00606CD2 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CB5BEDC5304852AD00606CD2 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F70EB0BF1508F180F96D886C /* Project object */;
 }

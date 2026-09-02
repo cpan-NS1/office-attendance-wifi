@@ -7,9 +7,9 @@
       <sparkle:version>1</sparkle:version>
       <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
       <pubDate>Tue, 15 Jul 2025 00:00:00 +0000</pubDate>
-      <enclosure url="https://github.com/Chandler9711/office-attendance-wifi/releases/download/v1.0.0/OfficeAttendance.dmg"
-                 sparkle:edSignature="PLACEHOLDER"
-                 length="0"
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.0.0/OfficeAttendance-1.0.0.dmg"
+                 sparkle:edSignature="ZXoaqyRGIPbn8P8zvJFBdXon2XYRptbsbvm3dsdcxwnaosGlEm2a8/IWu4P2Ifd4JDs0I7OLSqlK5SNWM3pcDg=="
+                 length="3669537"
                  type="application/octet-stream"/>
     </item>
   </channel>
