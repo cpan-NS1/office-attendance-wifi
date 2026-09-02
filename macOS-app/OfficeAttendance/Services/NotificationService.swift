@@ -36,6 +36,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         content.title = "⚙️ Office Attendance — Setup required"
         content.body = "Tap to open Settings"
         content.categoryIdentifier = "SETUP"
+        content.sound = .default
         schedule(content: content, id: "setup-reminder")
     }
 
