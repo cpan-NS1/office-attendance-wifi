@@ -146,6 +146,10 @@ struct SettingsView: View {
                 Button("Cancel") { NSApp.keyWindow?.close() }
                     .keyboardShortcut(.cancelAction)
                 Spacer()
+                Text("v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Spacer()
                 Button("Save") { saveCredentials() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(!canSave)
