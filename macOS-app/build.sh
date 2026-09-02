@@ -2,8 +2,9 @@
 # build.sh — Build OfficeAttendance.app and package it as a DMG.
 #
 # Usage:
-#   ./build.sh              # Release build (default)
-#   ./build.sh --debug      # Debug build
+#   ./build.sh                     # Release build using version in project.yml
+#   ./build.sh --release=1.0.3     # Release build with explicit version (updates project.yml)
+#   ./build.sh --debug             # Debug build
 #
 # Notarization (release builds only):
 #   Set these environment variables before running:
@@ -13,6 +14,13 @@
 #   If any of these are unset, notarization is skipped with a warning.
 
 set -euo pipefail
+
+# ── Load .env if present (repo root, one level up) ────────────────────────────
+ENV_FILE="$(dirname "$(pwd)")/.env"
+if [[ -f "$ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  set -a; source "$ENV_FILE"; set +a
+fi
 
 # ── Config ────────────────────────────────────────────────────────────────────
 SCHEME="OfficeAttendance"
@@ -33,19 +41,29 @@ CURRENT_PROJECT_VERSION=$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" \
 for arg in "$@"; do
   case $arg in
     --debug) CONFIGURATION="Debug" ;;
-    --version=*)
-      if [[ "$CONFIGURATION" == "Debug" ]]; then
-        echo "⚠️  --version ignored in debug builds"; else
-        MARKETING_VERSION="${arg#--version=}"
-      fi ;;
-    --build=*)
-      if [[ "$CONFIGURATION" == "Debug" ]]; then
-        echo "⚠️  --build ignored in debug builds"; else
-        CURRENT_PROJECT_VERSION="${arg#--build=}"
-      fi ;;
+    --release=*)
+      NEW_RELEASE_VERSION="${arg#--release=}"
+      ;;
     *) echo "Unknown argument: $arg"; exit 1 ;;
   esac
 done
+
+# If --release=X.Y.Z was given, write it into project.yml before xcodegen runs
+if [[ -n "${NEW_RELEASE_VERSION:-}" ]]; then
+  if [[ "$CONFIGURATION" == "Debug" ]]; then
+    echo "⚠️  --release ignored in debug builds"
+  else
+    # Derive build number by incrementing the current one
+    NEW_BUILD=$((CURRENT_PROJECT_VERSION + 1))
+    echo "▶ Bumping version to ${NEW_RELEASE_VERSION} (build ${NEW_BUILD}) in project.yml..."
+    sed -i '' "s/MARKETING_VERSION: \".*\"/MARKETING_VERSION: \"${NEW_RELEASE_VERSION}\"/" project.yml
+    sed -i '' "s/CURRENT_PROJECT_VERSION: \".*\"/CURRENT_PROJECT_VERSION: \"${NEW_BUILD}\"/" project.yml
+    sed -i '' "s/CFBundleShortVersionString: \".*\"/CFBundleShortVersionString: \"${NEW_RELEASE_VERSION}\"/" project.yml
+    sed -i '' "s/CFBundleVersion: \".*\"/CFBundleVersion: \"${NEW_BUILD}\"/" project.yml
+    MARKETING_VERSION="$NEW_RELEASE_VERSION"
+    CURRENT_PROJECT_VERSION="$NEW_BUILD"
+  fi
+fi
 
 # DMG name is resolved after argument parsing so --version= is already applied.
 if [[ "$CONFIGURATION" == "Debug" ]]; then
@@ -56,6 +74,10 @@ fi
 DMG_PATH="$(pwd)/$DMG_NAME"
 
 echo "▶ Configuration: $CONFIGURATION"
+
+# ── Regenerate Xcode project from project.yml ─────────────────────────────────
+echo "▶ Generating Xcode project..."
+xcodegen generate --spec project.yml
 
 # ── Clean previous outputs ────────────────────────────────────────────────────
 echo "▶ Cleaning previous build artifacts..."
@@ -163,6 +185,13 @@ if [[ "$CONFIGURATION" == "Release" ]]; then
     echo "⚠️  Skipping notarization — set APPLE_ID, APPLE_TEAM_ID, and APPLE_APP_PASSWORD to enable."
   else
     echo ""
+    echo "▶ Signing DMG..."
+    DMG_IDENTITY=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+    codesign --sign "$DMG_IDENTITY" \
+      --timestamp \
+      --verbose \
+      "$DMG_PATH"
+
     echo "▶ Notarizing DMG (this may take a few minutes)..."
     xcrun notarytool submit "$DMG_PATH" \
       --apple-id "$APPLE_ID" \
@@ -205,10 +234,21 @@ if [[ -n "$SIGN_UPDATE" && "$CONFIGURATION" == "Release" ]]; then
                  type=\"application/octet-stream\"/>
     </item>"
 
-  # Prepend the new item into the existing appcast.xml (after <channel>)
-  # Replace the first occurrence of the opening <item> tag with NEW_ITEM + original <item>
-  ESCAPED_ITEM=$(printf '%s\n' "$NEW_ITEM" | sed 's/[\/&]/\\&/g')
-  sed -i '' "s|    <item>|${ESCAPED_ITEM}\n    <item>|1" "$APPCAST"
+  # Upsert the new item into appcast.xml: remove any existing entry for this
+  # version, then prepend the fresh one so the file stays newest-first.
+  python3 - "$APPCAST" "$NEW_ITEM" "$MARKETING_VERSION" <<'PYEOF'
+import sys, re
+path, new_item, version = sys.argv[1], sys.argv[2], sys.argv[3]
+content = open(path).read()
+# Remove any existing <item> block that mentions this version
+content = re.sub(
+    r'\s*<item>\s*<title>Version ' + re.escape(version) + r'</title>.*?</item>',
+    '', content, flags=re.DOTALL)
+# Insert before the first <item>
+idx = content.index('    <item>')
+updated = content[:idx] + new_item + '\n' + content[idx:]
+open(path, 'w').write(updated)
+PYEOF
 
   echo "✅ appcast.xml updated with v${MARKETING_VERSION}."
   echo ""
@@ -217,4 +257,18 @@ if [[ -n "$SIGN_UPDATE" && "$CONFIGURATION" == "Release" ]]; then
   echo "─────────────────────────────────────────────────────────────────────────"
 else
   [[ "$CONFIGURATION" == "Release" ]] && echo "⚠️  sign_update not found — skipping Sparkle signature. Build Sparkle first."
+fi
+
+# ── Commit release files ───────────────────────────────────────────────────────
+if [[ "$CONFIGURATION" == "Release" ]]; then
+  echo ""
+  echo "▶ Committing release files..."
+  git add \
+    project.yml \
+    OfficeAttendance.xcodeproj/project.pbxproj \
+    OfficeAttendance/Info.plist \
+    appcast.xml
+  git commit -m "release: v${MARKETING_VERSION}"
+  echo "✅ Committed release: v${MARKETING_VERSION}"
+  echo "   Run: git push && upload ${DMG_NAME} to GitHub Release tagged v${MARKETING_VERSION}"
 fi
