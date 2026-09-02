@@ -3,6 +3,26 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.1.0</title>
+      <sparkle:version>4</sparkle:version>
+      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <pubDate>Wed, 02 Sep 2026 14:48:52 +0000</pubDate>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.1.0/OfficeAttendance-1.1.0.dmg"
+                 sparkle:edSignature="BZlVigOsl9OLhImZxP/7LdOzzypV6612chUdSxdpHqldrDrsJsIZj8TWG3+FEsAjbklTYTwhqVFLxbUT9LQGAQ=="
+                 length="3681364"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
+      <title>Version 1.0.2</title>
+      <sparkle:version>3</sparkle:version>
+      <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
+      <pubDate>Wed, 02 Sep 2026 14:42:00 +0000</pubDate>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.0.2/OfficeAttendance-1.0.2.dmg"
+                 sparkle:edSignature="PVkfCrmdAffHN4FISpDK4fmGGwUswUn/IEfiCdWX0l4SLa+rvj/OvGlB8Iez4veSWcUNk+zzlwf/6G01QFSgDw=="
+                 length="3681375"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.0.1</title>
       <sparkle:version>2</sparkle:version>
       <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
@@ -16,10 +36,10 @@
       <title>Version 1.0.0</title>
       <sparkle:version>1</sparkle:version>
       <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
-      <pubDate>Tue, 15 Jul 2025 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 02 Sep 2026 14:38:41 +0000</pubDate>
       <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.0.0/OfficeAttendance-1.0.0.dmg"
-                 sparkle:edSignature="ZXoaqyRGIPbn8P8zvJFBdXon2XYRptbsbvm3dsdcxwnaosGlEm2a8/IWu4P2Ifd4JDs0I7OLSqlK5SNWM3pcDg=="
-                 length="3669537"
+                 sparkle:edSignature="Ws3SxrH2VOnorMdjMJ88h/LDXFXIs1qksH+EhG1Xo7SQIQW/0gsJxyr7FdNbXxlBapqz4ZSZ5xZ+EsYxzGK6Dw=="
+                 length="3681102"
                  type="application/octet-stream"/>
     </item>
   </channel>
