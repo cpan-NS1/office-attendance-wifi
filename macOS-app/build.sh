@@ -40,6 +40,7 @@ for arg in "$@"; do
   esac
 done
 
+# DMG name is resolved after argument parsing so --version= is already applied.
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   DMG_NAME="OfficeAttendance-debug.dmg"
 else
@@ -100,6 +101,24 @@ APP_PATH="$EXPORT_PATH/$SCHEME.app"
 # ── Package DMG ───────────────────────────────────────────────────────────────
 echo "▶ Creating DMG..."
 
+# Build a volume icon (.icns) from the app's 1024×1024 asset
+ICON_SRC="$(pwd)/OfficeAttendance/Assets.xcassets/AppIcon.appiconset/icon_1024x1024.png"
+ICONSET_DIR="$BUILD_DIR/VolumeIcon.iconset"
+ICNS_PATH="$BUILD_DIR/VolumeIcon.icns"
+mkdir -p "$ICONSET_DIR"
+sips -z 16  16  "$ICON_SRC" --out "$ICONSET_DIR/icon_16x16.png"     > /dev/null
+sips -z 32  32  "$ICON_SRC" --out "$ICONSET_DIR/icon_16x16@2x.png"  > /dev/null
+sips -z 32  32  "$ICON_SRC" --out "$ICONSET_DIR/icon_32x32.png"     > /dev/null
+sips -z 64  64  "$ICON_SRC" --out "$ICONSET_DIR/icon_32x32@2x.png"  > /dev/null
+sips -z 128 128 "$ICON_SRC" --out "$ICONSET_DIR/icon_128x128.png"   > /dev/null
+sips -z 256 256 "$ICON_SRC" --out "$ICONSET_DIR/icon_128x128@2x.png"> /dev/null
+sips -z 256 256 "$ICON_SRC" --out "$ICONSET_DIR/icon_256x256.png"   > /dev/null
+sips -z 512 512 "$ICON_SRC" --out "$ICONSET_DIR/icon_256x256@2x.png"> /dev/null
+sips -z 512 512 "$ICON_SRC" --out "$ICONSET_DIR/icon_512x512.png"   > /dev/null
+cp "$ICON_SRC"                    "$ICONSET_DIR/icon_512x512@2x.png"
+iconutil -c icns "$ICONSET_DIR" -o "$ICNS_PATH"
+rm -rf "$ICONSET_DIR"
+
 # Use hdiutil to make a compressed, internet-ready DMG
 TMP_DMG="$BUILD_DIR/tmp.dmg"
 VOLUME_NAME="Office Attendance"
@@ -110,6 +129,14 @@ hdiutil create \
   -ov \
   -format UDRW \
   "$TMP_DMG"
+
+# Mount the writable image and set the volume icon
+MOUNT_DIR="$(mktemp -d /tmp/dmg-mount-XXXXXX)"
+hdiutil attach "$TMP_DMG" -mountpoint "$MOUNT_DIR" -nobrowse -quiet
+cp "$ICNS_PATH" "$MOUNT_DIR/.VolumeIcon.icns"
+SetFile -a C "$MOUNT_DIR" 2>/dev/null || true   # set custom-icon bit (requires Xcode CLI tools)
+hdiutil detach "$MOUNT_DIR" -quiet
+rm -rf "$MOUNT_DIR"
 
 hdiutil convert "$TMP_DMG" \
   -format UDZO \

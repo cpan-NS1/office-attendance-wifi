@@ -25,6 +25,11 @@ final class AttendanceCoordinator: ObservableObject {
             NotificationService.shared.sendSetupReminder()
             return
         }
+
+        // Restore today's status from UserDefaults so the menu is correct immediately,
+        // even before any network check or API call.
+        restoreStateFromDefaults()
+
         networkMonitor.start(credentials: credentials)
         networkMonitor.$isOnOfficeNetwork
             .receive(on: DispatchQueue.main)
@@ -33,6 +38,18 @@ final class AttendanceCoordinator: ObservableObject {
             }
             .store(in: &cancellables)
         scheduleMidnightReset()
+    }
+
+    /// Seeds `checkInState` from today's persisted UserDefaults value so the
+    /// menu reflects the correct status immediately on launch, and sends a
+    /// notification so the user knows what was already logged.
+    private func restoreStateFromDefaults() {
+        let key = todayKey()
+        guard let saved = UserDefaults.standard.string(forKey: key),
+              let status = AttendanceStatus.allCases.first(where: { $0.mondayValue == saved })
+        else { return }
+        checkInState = .checkedIn(status)
+        NotificationService.shared.sendCheckInNotification(status: status)
     }
 
     func manualCheckIn(status: AttendanceStatus) async {

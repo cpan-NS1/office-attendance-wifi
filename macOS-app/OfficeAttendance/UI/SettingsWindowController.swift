@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-final class SettingsWindowController: NSWindowController {
+final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private let credentialStore: CredentialStore
     private let mondayService: MondayService
     private let networkMonitor: NetworkMonitor
@@ -20,6 +20,7 @@ final class SettingsWindowController: NSWindowController {
         window.title = "Office Attendance Settings"
         window.center()
         super.init(window: window)
+        window.delegate = self
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -34,7 +35,12 @@ final class SettingsWindowController: NSWindowController {
         )
         let hostingController = NSHostingController(rootView: settingsView)
         window?.contentViewController = hostingController
+        NSApp.setActivationPolicy(.regular)
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        NSApp.setActivationPolicy(.accessory)
     }
 }

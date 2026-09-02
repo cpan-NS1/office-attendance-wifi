@@ -4,6 +4,12 @@ final class CredentialStore: ObservableObject {
     private let serviceName = "com.chenmo.office-attendance"
     private let columnMapKey = "columnMap"
 
+    struct HistoryEntry: Identifiable {
+        let date: String          // "yyyy-MM-dd"
+        let status: AttendanceStatus
+        var id: String { date }
+    }
+
     private let credentialKeys = ["monday-token", "board-id", "employee-id",
                                   "office-ip-prefix", "office-dns-domain"]
 
@@ -53,6 +59,20 @@ final class CredentialStore: ObservableObject {
     func loadColumnMap() -> ColumnMap? {
         guard let data = UserDefaults.standard.data(forKey: columnMapKey) else { return nil }
         return try? JSONDecoder().decode(ColumnMap.self, from: data)
+    }
+
+    /// Returns all persisted attendance entries, newest-first.
+    func loadHistory() -> [HistoryEntry] {
+        UserDefaults.standard.dictionaryRepresentation()
+            .compactMap { key, value -> HistoryEntry? in
+                guard key.hasPrefix("attendance-"),
+                      let raw = value as? String,
+                      let status = AttendanceStatus.allCases.first(where: { $0.mondayValue == raw })
+                else { return nil }
+                let date = String(key.dropFirst("attendance-".count))
+                return HistoryEntry(date: date, status: status)
+            }
+            .sorted { $0.date > $1.date }
     }
 
     // MARK: - Private

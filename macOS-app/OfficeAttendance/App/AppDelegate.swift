@@ -5,14 +5,13 @@ import Combine
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var settingsWindowController: SettingsWindowController?
+    private var historyWindowController: HistoryWindowController?
     private var credentialStore = CredentialStore()
     private var mondayService = MondayService()
     private var coordinator: AttendanceCoordinator?
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.regular)
-
         let networkMonitor = NetworkMonitor()
         settingsWindowController = SettingsWindowController(
             credentialStore: credentialStore,
@@ -22,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsWindowController?.onSave = { [weak self] in
             self?.restartCoordinator()
         }
+        historyWindowController = HistoryWindowController(credentialStore: credentialStore)
         coordinator = AttendanceCoordinator(
             credentialStore: credentialStore,
             networkMonitor: networkMonitor,
@@ -100,6 +100,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         menu.addItem(.separator())
+        menu.addItem(NSMenuItem(title: "History…", action: #selector(openHistory), keyEquivalent: "h"))
+        if let boardId = credentialStore.load()?.boardId,
+           let url = URL(string: "https://ibm.monday.com/boards/\(boardId)") {
+            let boardItem = NSMenuItem(title: "Open Board ↗", action: #selector(openBoard), keyEquivalent: "")
+            boardItem.representedObject = url
+            menu.addItem(boardItem)
+        }
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         return menu
@@ -113,6 +121,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func today() -> String {
         let f = DateFormatter(); f.dateStyle = .full; f.timeStyle = .none
         return f.string(from: Date())
+    }
+
+    @objc private func openHistory() {
+        historyWindowController?.show()
+    }
+
+    @objc private func openBoard(_ sender: NSMenuItem) {
+        guard let url = sender.representedObject as? URL else { return }
+        NSWorkspace.shared.open(url)
     }
 
     @objc private func openSettings() {

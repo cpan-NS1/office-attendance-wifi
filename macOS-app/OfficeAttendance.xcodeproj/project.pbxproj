@@ -25,6 +25,8 @@
 		B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF16F5116CD9F444F75DD85 /* MondayServiceTests.swift */; };
 		C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */; };
 		CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C17F111C461DB2D409E8E4 /* SettingsView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F3 /* HistoryView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F4 /* HistoryWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F5 /* HistoryWindowController.swift */; };
 		AA11BB22CC33DD44EE55FF66 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF77 /* Assets.xcassets */; };
 		EB9DE5FD11EAE0FFDC43CCB9 /* MondayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8985095425240345AD2049E5 /* MondayService.swift */; };
 /* End PBXBuildFile section */
@@ -64,6 +66,8 @@
 		FA7ACC162CE4EF1417F07FB5 /* OfficeAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OfficeAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA11BB22CC33DD44EE55FF77 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F3 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F5 /* HistoryWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -129,6 +133,8 @@
 			children = (
 				35C17F111C461DB2D409E8E4 /* SettingsView.swift */,
 				FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F3 /* HistoryView.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F5 /* HistoryWindowController.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -321,6 +327,8 @@
 				67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */,
 				CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */,
 				2A456DBF578DF0ECB4F69069 /* SettingsWindowController.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* HistoryView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F4 /* HistoryWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

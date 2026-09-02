@@ -28,6 +28,26 @@ final class NetworkMonitor: ObservableObject {
         }
         m.start(queue: queue)
         monitor = m
+        // Fire an immediate evaluation so callers don't wait for the first
+        // path-change event (which never fires if already connected).
+        checkCurrentNetwork(credentials: credentials)
+    }
+
+    /// Evaluates the current network state and publishes the result immediately.
+    func checkCurrentNetwork(credentials: CredentialStore.Credentials) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            let ip = self.currentIPAddress() ?? ""
+            let dns = self.currentDNSDomain() ?? ""
+            let ipOk = self.ipMatches(ip: ip, prefix: credentials.ipPrefix)
+            let dnsOk = self.dnsMatches(domain: dns, suffix: credentials.dnsDomain)
+            let result = ipOk || dnsOk
+            DispatchQueue.main.async {
+                self.detectedIP = ip
+                self.detectedDNS = dns
+                self.isOnOfficeNetwork = result
+            }
+        }
     }
 
     func stop() {
