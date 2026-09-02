@@ -3,6 +3,16 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.2.0</title>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+      <pubDate>Wed, 02 Sep 2026 15:32:05 +0000</pubDate>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.2.0/OfficeAttendance-1.2.0.dmg"
+                 sparkle:edSignature="bGqHtN1XRV7aQdXhV8orN8KUCaH/JA1YmApNvt9aNHJDzQWLAOIuiI1VEHMi5Lewfb2wdN/PVXUO4/sbgAUPDQ=="
+                 length="3705783"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.1.0</title>
       <sparkle:version>4</sparkle:version>
       <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
