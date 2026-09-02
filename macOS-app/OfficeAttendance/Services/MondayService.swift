@@ -117,6 +117,81 @@ final class MondayService {
         }
     }
 
+    // MARK: - History fetch
+
+    /// Fetches all attendance statuses for the employee for the given month.
+    /// Returns a dictionary keyed by "yyyy-MM-dd" ISO date strings.
+    /// Weeks with no board row are silently skipped.
+    func fetchMonthStatus(boardId: String,
+                          employeeId: String,
+                          columnMap: ColumnMap,
+                          token: String,
+                          month: Date) async throws -> [String: AttendanceStatus] {
+        let weekStarts = weekStartDates(overlapping: month)
+        var result: [String: AttendanceStatus] = [:]
+
+        for weekStart in weekStarts {
+            let weekStartStr = weekStartDateString(for: weekStart)
+
+            // Find the row for this week; skip if not found
+            guard let itemId = try? await findItemId(
+                boardId: boardId,
+                employeeId: employeeId,
+                weekStartDate: weekStartStr,
+                columnMap: columnMap,
+                token: token
+            ) else { continue }
+
+            let dayValues = try await fetchWeekDayValues(
+                itemId: itemId,
+                columnMap: columnMap,
+                token: token
+            )
+
+            let colIds = [
+                (columnMap.mondayColumnId,    0),
+                (columnMap.tuesdayColumnId,   1),
+                (columnMap.wednesdayColumnId, 2),
+                (columnMap.thursdayColumnId,  3),
+                (columnMap.fridayColumnId,    4)
+            ]
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.firstWeekday = 2
+            let isoFormatter = DateFormatter()
+            isoFormatter.dateFormat = "yyyy-MM-dd"
+            isoFormatter.locale = Locale(identifier: "en_US_POSIX")
+
+            for (colId, dayOffset) in colIds {
+                guard let text = dayValues[colId],
+                      let status = AttendanceStatus.allCases.first(where: { $0.mondayValue == text }),
+                      let dayDate = calendar.date(byAdding: .day, value: dayOffset, to: weekStart)
+                else { continue }
+                result[isoFormatter.string(from: dayDate)] = status
+            }
+        }
+
+        return result
+    }
+
+    /// Returns every Monday date for weeks that overlap the given month.
+    private func weekStartDates(overlapping month: Date) -> [Date] {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.firstWeekday = 2 // Monday
+        let comps = calendar.dateComponents([.year, .month], from: month)
+        guard let monthStart = calendar.date(from: comps),
+              let monthRange = calendar.range(of: .day, in: .month, for: monthStart)
+        else { return [] }
+        let monthEnd = calendar.date(byAdding: .day, value: monthRange.count - 1, to: monthStart)!
+
+        var starts: [Date] = []
+        var current = weekStartDate(for: monthStart)
+        while current <= monthEnd {
+            starts.append(current)
+            current = calendar.date(byAdding: .weekOfYear, value: 1, to: current)!
+        }
+        return starts
+    }
+
     // MARK: - Internal helpers
 
     private func findItemId(boardId: String, employeeId: String,
@@ -176,6 +251,45 @@ final class MondayService {
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter.string(from: weekStartDate(for: date))
+    }
+
+    /// Fetches the five day-column text values for a known itemId.
+    /// Returns a dict of columnId -> text (only non-empty values are included).
+    private func fetchWeekDayValues(itemId: String,
+                                     columnMap: ColumnMap,
+                                     token: String) async throws -> [String: String] {
+        let colIds = [columnMap.mondayColumnId, columnMap.tuesdayColumnId,
+                      columnMap.wednesdayColumnId, columnMap.thursdayColumnId,
+                      columnMap.fridayColumnId]
+        let idsLiteral = colIds.map { "\"\($0)\"" }.joined(separator: ",")
+        let query = """
+        query($itemId: ID!) {
+          items(ids: [$itemId]) {
+            column_values(ids: [\(idsLiteral)]) {
+              id text
+            }
+          }
+        }
+        """
+        let payload = try buildPayload(query: query, variables: ["itemId": itemId])
+        let data = try await post(payload: payload, token: token)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let errors = (json?["errors"] as? [[String: Any]]) ?? []
+        if !errors.isEmpty {
+            throw MondayError.apiError(errors.first?["message"] as? String ?? "unknown")
+        }
+        guard let items = (json?["data"] as? [String: Any])?["items"] as? [[String: Any]],
+              let colVals = items.first?["column_values"] as? [[String: Any]]
+        else { throw MondayError.apiError("Unexpected response shape from items query") }
+
+        var result: [String: String] = [:]
+        for cv in colVals {
+            guard let id = cv["id"] as? String,
+                  let text = cv["text"] as? String,
+                  !text.isEmpty else { continue }
+            result[id] = text
+        }
+        return result
     }
 
     private func buildPayload(query: String, variables: [String: Any]) throws -> Data {
