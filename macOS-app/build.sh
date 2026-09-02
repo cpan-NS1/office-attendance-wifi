@@ -4,6 +4,13 @@
 # Usage:
 #   ./build.sh              # Release build (default)
 #   ./build.sh --debug      # Debug build
+#
+# Notarization (release builds only):
+#   Set these environment variables before running:
+#     APPLE_ID          — your Apple ID email
+#     APPLE_TEAM_ID     — your 10-character team ID (e.g. 9N2755GT26)
+#     APPLE_APP_PASSWORD — an app-specific password from appleid.apple.com
+#   If any of these are unset, notarization is skipped with a warning.
 
 set -euo pipefail
 
@@ -149,22 +156,64 @@ echo ""
 echo "✅ Done! DMG created at: $DMG_PATH"
 echo "   App version: $(defaults read "$APP_PATH/Contents/Info" CFBundleShortVersionString)"
 
-# ── Sign DMG for Sparkle ──────────────────────────────────────────────────────
+# ── Notarize & staple (release only) ─────────────────────────────────────────
+if [[ "$CONFIGURATION" == "Release" ]]; then
+  if [[ -z "${APPLE_ID:-}" || -z "${APPLE_TEAM_ID:-}" || -z "${APPLE_APP_PASSWORD:-}" ]]; then
+    echo ""
+    echo "⚠️  Skipping notarization — set APPLE_ID, APPLE_TEAM_ID, and APPLE_APP_PASSWORD to enable."
+  else
+    echo ""
+    echo "▶ Notarizing DMG (this may take a few minutes)..."
+    xcrun notarytool submit "$DMG_PATH" \
+      --apple-id "$APPLE_ID" \
+      --team-id "$APPLE_TEAM_ID" \
+      --password "$APPLE_APP_PASSWORD" \
+      --wait
+
+    echo "▶ Stapling notarization ticket..."
+    xcrun stapler staple "$DMG_PATH"
+
+    echo "▶ Verifying Gatekeeper acceptance..."
+    spctl --assess --type open --context context:primary-signature -v "$DMG_PATH"
+    echo "✅ Notarization complete — Gatekeeper will accept this DMG."
+  fi
+fi
+
+# ── Sign DMG for Sparkle & update appcast.xml ─────────────────────────────────
 SIGN_UPDATE="$(find ~/Library/Developer/Xcode/DerivedData -name "sign_update" 2>/dev/null | head -1)"
 if [[ -n "$SIGN_UPDATE" && "$CONFIGURATION" == "Release" ]]; then
   echo ""
   echo "▶ Signing DMG for Sparkle..."
+  # sign_update outputs:  sparkle:edSignature="..." length="..."
   SPARKLE_SIG=$("$SIGN_UPDATE" "$DMG_PATH")
+  ED_SIG=$(echo "$SPARKLE_SIG" | grep -o 'sparkle:edSignature="[^"]*"' | cut -d'"' -f2)
   DMG_SIZE=$(stat -f%z "$DMG_PATH")
+  PUB_DATE=$(date -u "+%a, %d %b %Y %H:%M:%S +0000")
+  ENCLOSURE_URL="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v${MARKETING_VERSION}/${DMG_NAME}"
+
+  APPCAST="$(pwd)/appcast.xml"
+
+  # Build the new <item> block
+  NEW_ITEM="    <item>
+      <title>Version ${MARKETING_VERSION}</title>
+      <sparkle:version>${CURRENT_PROJECT_VERSION}</sparkle:version>
+      <sparkle:shortVersionString>${MARKETING_VERSION}</sparkle:shortVersionString>
+      <pubDate>${PUB_DATE}</pubDate>
+      <enclosure url=\"${ENCLOSURE_URL}\"
+                 sparkle:edSignature=\"${ED_SIG}\"
+                 length=\"${DMG_SIZE}\"
+                 type=\"application/octet-stream\"/>
+    </item>"
+
+  # Prepend the new item into the existing appcast.xml (after <channel>)
+  # Replace the first occurrence of the opening <item> tag with NEW_ITEM + original <item>
+  ESCAPED_ITEM=$(printf '%s\n' "$NEW_ITEM" | sed 's/[\/&]/\\&/g')
+  sed -i '' "s|    <item>|${ESCAPED_ITEM}\n    <item>|1" "$APPCAST"
+
+  echo "✅ appcast.xml updated with v${MARKETING_VERSION}."
   echo ""
   echo "── appcast.xml snippet ──────────────────────────────────────────────────"
-  echo "<enclosure"
-  echo "  url=\"https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v${MARKETING_VERSION}/${DMG_NAME}\""
-  echo "  sparkle:version=\"${CURRENT_PROJECT_VERSION}\""
-  echo "  sparkle:shortVersionString=\"${MARKETING_VERSION}\""
-  echo "  $SPARKLE_SIG"
-  echo "  length=\"${DMG_SIZE}\""
-  echo "  type=\"application/octet-stream\"/>"
+  echo "$NEW_ITEM"
   echo "─────────────────────────────────────────────────────────────────────────"
 else
   [[ "$CONFIGURATION" == "Release" ]] && echo "⚠️  sign_update not found — skipping Sparkle signature. Build Sparkle first."
