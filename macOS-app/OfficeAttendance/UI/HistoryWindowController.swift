@@ -3,9 +3,11 @@ import SwiftUI
 
 final class HistoryWindowController: NSWindowController, NSWindowDelegate {
     private let credentialStore: CredentialStore
+    private let mondayService: MondayService
 
-    init(credentialStore: CredentialStore) {
+    init(credentialStore: CredentialStore, mondayService: MondayService) {
         self.credentialStore = credentialStore
+        self.mondayService = mondayService
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 480, height: 500),
             styleMask: [.titled, .closable],
@@ -21,8 +23,14 @@ final class HistoryWindowController: NSWindowController, NSWindowDelegate {
     required init?(coder: NSCoder) { fatalError() }
 
     func show() {
-        let boardId = credentialStore.load()?.boardId ?? ""
-        let view = HistoryView(credentialStore: credentialStore, boardId: boardId)
+        let creds = credentialStore.load()
+        let boardId = creds?.boardId ?? ""
+        let view = HistoryView(
+            credentialStore: credentialStore,
+            mondayService: mondayService,
+            credentials: creds,
+            boardId: boardId
+        )
         window?.contentViewController = NSHostingController(rootView: view)
         NSApp.setActivationPolicy(.regular)
         window?.makeKeyAndOrderFront(nil)

@@ -2,12 +2,17 @@ import SwiftUI
 
 struct HistoryView: View {
     let credentialStore: CredentialStore
+    let mondayService: MondayService
+    let credentials: CredentialStore.Credentials?
     let boardId: String
 
     @State private var entries: [CredentialStore.HistoryEntry] = []
     @State private var displayedMonth: Date = {
         Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date()))!
     }()
+    @State private var remoteEntries: [String: AttendanceStatus] = [:]
+    @State private var fetchError: String? = nil
+    @State private var isFetching = false
 
     private var boardURL: URL? {
         guard !boardId.isEmpty else { return nil }
@@ -16,7 +21,9 @@ struct HistoryView: View {
 
     // Dictionary keyed by "yyyy-MM-dd" for O(1) lookup in the grid
     private var entryMap: [String: AttendanceStatus] {
-        Dictionary(uniqueKeysWithValues: entries.map { ($0.date, $0.status) })
+        var map = Dictionary(uniqueKeysWithValues: entries.map { ($0.date, $0.status) })
+        for (k, v) in remoteEntries { map[k] = v }
+        return map
     }
 
     private let isoParser: DateFormatter = {
@@ -93,6 +100,12 @@ struct HistoryView: View {
                 }
                 .buttonStyle(.plain)
 
+                if isFetching {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                        .frame(width: 16, height: 16)
+                }
+
                 Spacer()
 
                 if let url = boardURL {
@@ -102,7 +115,15 @@ struct HistoryView: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
-            .padding(.bottom, 12)
+            .padding(.bottom, fetchError != nil ? 4 : 12)
+
+            if let fetchError {
+                Text("⚠️ \(fetchError)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+            }
 
             Divider()
 
@@ -165,12 +186,45 @@ struct HistoryView: View {
         }
         .frame(width: 480)
         .fixedSize(horizontal: false, vertical: true)
-        .onAppear { entries = credentialStore.loadHistory() }
+        .onAppear {
+            entries = credentialStore.loadHistory()
+            fetchRemote()
+        }
+        .onChange(of: displayedMonth) { _ in
+            fetchRemote()
+        }
     }
 
     private func changeMonth(by delta: Int) {
         if let next = cal.date(byAdding: .month, value: delta, to: displayedMonth) {
             displayedMonth = next
+        }
+    }
+
+    private func fetchRemote() {
+        guard let credentials,
+              let columnMap = credentialStore.loadColumnMap() else { return }
+        isFetching = true
+        fetchError = nil
+        Task {
+            do {
+                let remote = try await mondayService.fetchMonthStatus(
+                    boardId: credentials.boardId,
+                    employeeId: credentials.employeeId,
+                    columnMap: columnMap,
+                    token: credentials.token,
+                    month: displayedMonth
+                )
+                await MainActor.run {
+                    remoteEntries = remote
+                    isFetching = false
+                }
+            } catch {
+                await MainActor.run {
+                    fetchError = error.localizedDescription
+                    isFetching = false
+                }
+            }
         }
     }
 }

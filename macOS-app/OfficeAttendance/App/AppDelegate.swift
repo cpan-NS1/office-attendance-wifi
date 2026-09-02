@@ -27,7 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsWindowController?.onSave = { [weak self] in
             self?.restartCoordinator()
         }
-        historyWindowController = HistoryWindowController(credentialStore: credentialStore)
+        historyWindowController = HistoryWindowController(credentialStore: credentialStore, mondayService: mondayService)
         coordinator = AttendanceCoordinator(
             credentialStore: credentialStore,
             networkMonitor: networkMonitor,
