@@ -130,6 +130,19 @@ final class MondayService {
         let weekStarts = weekStartDates(overlapping: month)
         var result: [String: AttendanceStatus] = [:]
 
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.firstWeekday = 2
+        let isoFormatter = DateFormatter()
+        isoFormatter.dateFormat = "yyyy-MM-dd"
+        isoFormatter.locale = Locale(identifier: "en_US_POSIX")
+        let colIds = [
+            (columnMap.mondayColumnId,    0),
+            (columnMap.tuesdayColumnId,   1),
+            (columnMap.wednesdayColumnId, 2),
+            (columnMap.thursdayColumnId,  3),
+            (columnMap.fridayColumnId,    4)
+        ]
+
         for weekStart in weekStarts {
             let weekStartStr = weekStartDateString(for: weekStart)
 
@@ -147,19 +160,6 @@ final class MondayService {
                 columnMap: columnMap,
                 token: token
             )
-
-            let colIds = [
-                (columnMap.mondayColumnId,    0),
-                (columnMap.tuesdayColumnId,   1),
-                (columnMap.wednesdayColumnId, 2),
-                (columnMap.thursdayColumnId,  3),
-                (columnMap.fridayColumnId,    4)
-            ]
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.firstWeekday = 2
-            let isoFormatter = DateFormatter()
-            isoFormatter.dateFormat = "yyyy-MM-dd"
-            isoFormatter.locale = Locale(identifier: "en_US_POSIX")
 
             for (colId, dayOffset) in colIds {
                 guard let text = dayValues[colId],
