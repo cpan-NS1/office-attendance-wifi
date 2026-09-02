@@ -27,5 +27,9 @@
 	</dict>
 	<key>NSUserNotificationAlertStyle</key>
 	<string>alert</string>
+	<key>SUFeedURL</key>
+	<string>https://github.com/cpan-NS1/office-attendance-wifi/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>M6oNnpuRZmpXgfvmRly6CmtwzLX81FqD3PbjFHaH2oM=</string>
 </dict>
 </plist>
