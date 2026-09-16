@@ -31,11 +31,9 @@ BUILD_DIR="$(pwd)/build"
 ARCHIVE_PATH="$BUILD_DIR/$SCHEME.xcarchive"
 EXPORT_PATH="$BUILD_DIR/export"
 
-# Read current version from build settings as the default
-MARKETING_VERSION=$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" \
-  -showBuildSettings 2>/dev/null | awk '/MARKETING_VERSION/{print $3; exit}')
-CURRENT_PROJECT_VERSION=$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" \
-  -showBuildSettings 2>/dev/null | awk '/CURRENT_PROJECT_VERSION/{print $3; exit}')
+# Read current version from project.yml (source of truth before xcodegen runs)
+MARKETING_VERSION=$(awk -F'"' '/^    MARKETING_VERSION:/{print $2}' project.yml)
+CURRENT_PROJECT_VERSION=$(awk -F'"' '/^    CURRENT_PROJECT_VERSION:/{print $2}' project.yml)
 
 # ── Flags ─────────────────────────────────────────────────────────────────────
 for arg in "$@"; do
