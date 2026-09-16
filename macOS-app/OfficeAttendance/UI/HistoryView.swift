@@ -109,7 +109,7 @@ struct HistoryView: View {
                 Spacer()
 
                 if let url = boardURL {
-                    Link("Open Board ↗", destination: url)
+                    Link("Open Board to update ↗", destination: url)
                         .font(.subheadline)
                 }
             }
@@ -163,11 +163,16 @@ struct HistoryView: View {
 
             // ── Legend ────────────────────────────────────────────────────
             Divider()
-            HStack(spacing: 16) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 5), spacing: 6) {
                 ForEach(AttendanceStatus.allCases, id: \.self) { s in
                     HStack(spacing: 4) {
                         Text(s.icon).font(.caption)
-                        Text(s.menuLabel).font(.caption).foregroundColor(.secondary)
+                        Text(s.menuLabel)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Spacer(minLength: 0)
                     }
                 }
             }
@@ -241,11 +246,16 @@ private struct DayCell: View {
     private var bgColor: Color {
         if let status {
             switch status {
-            case .office:   return Color.blue.opacity(0.15)
-            case .wfh:      return Color.green.opacity(0.15)
-            case .sick:     return Color.orange.opacity(0.15)
-            case .vacation: return Color.purple.opacity(0.15)
-            case .holiday:  return Color.red.opacity(0.15)
+            case .office:               return Color.blue.opacity(0.15)
+            case .wfh:                  return Color.green.opacity(0.15)
+            case .wfhSickness:          return Color.orange.opacity(0.15)
+            case .wfhUnplannedIssues:   return Color.yellow.opacity(0.15)
+            case .wfhWeatherWarning:    return Color.teal.opacity(0.15)
+            case .sick:                 return Color.red.opacity(0.15)
+            case .vacation:             return Color.purple.opacity(0.15)
+            case .loa:                  return Color.indigo.opacity(0.15)
+            case .bankHoliday:          return Color.mint.opacity(0.15)
+            case .travel:               return Color.cyan.opacity(0.15)
             }
         }
         return isWeekend ? Color.primary.opacity(0.04) : Color.clear
