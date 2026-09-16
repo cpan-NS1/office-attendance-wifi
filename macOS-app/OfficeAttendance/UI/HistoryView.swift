@@ -222,6 +222,10 @@ struct HistoryView: View {
                     month: displayedMonth
                 )
                 await MainActor.run {
+                    for (date, status) in remote {
+                        credentialStore.saveAttendance(date: date, status: status)
+                    }
+                    entries = credentialStore.loadHistory()
                     remoteEntries = remote
                     isFetching = false
                 }

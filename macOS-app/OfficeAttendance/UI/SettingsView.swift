@@ -53,20 +53,30 @@ struct SettingsView: View {
                                 }
                             }
                             LabeledField("Board ID") {
-                                TextField("e.g. 1234567890", text: $boardId)
-                                    .textFieldStyle(.roundedBorder)
-                                    .onChange(of: boardId) { newValue in
-                                        let filtered = newValue.filter(\.isNumber)
-                                        if filtered != newValue { boardId = filtered }
-                                    }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    TextField("e.g. 1234567890", text: $boardId)
+                                        .textFieldStyle(.roundedBorder)
+                                        .onChange(of: boardId) { newValue in
+                                            let filtered = newValue.filter(\.isNumber)
+                                            if filtered != newValue { boardId = filtered }
+                                        }
+                                    Text("Found in the board URL: ibm.monday.com/boards/{boardId}")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                             LabeledField("Employee ID") {
-                                TextField("e.g. 1234567890", text: $employeeId)
-                                    .textFieldStyle(.roundedBorder)
-                                    .onChange(of: employeeId) { newValue in
-                                        let filtered = newValue.filter(\.isNumber)
-                                        if filtered != newValue { employeeId = filtered }
-                                    }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    TextField("e.g. 1234567", text: $employeeId)
+                                        .textFieldStyle(.roundedBorder)
+                                        .onChange(of: employeeId) { newValue in
+                                            let filtered = String(newValue.filter(\.isNumber).prefix(7))
+                                            if filtered != newValue { employeeId = filtered }
+                                        }
+                                    Text("7-digit ID found in the Employee ID column of the board.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
                         .padding(.vertical, 4)
