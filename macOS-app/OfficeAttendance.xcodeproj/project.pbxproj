@@ -13,9 +13,9 @@
 		1B71FC9ED01892BA9F4A1D63 /* ColumnMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DC8A2DE514A0FAE210E99FE /* ColumnMap.swift */; };
 		1DA8FF8A396148529C5DB2F9 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1D955A37269B1102CD810 /* HistoryView.swift */; };
 		27CADA61FDD6578878753466 /* AttendanceStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */; };
-		AA11BB22CC33DD44EE55FF66 /* ColumnMapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF67 /* ColumnMapTests.swift */; };
 		2A456DBF578DF0ECB4F69069 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB0D0D4CEE4C81405CB9FCA /* SettingsWindowController.swift */; };
 		3CCDCCEE7B804518B1202E38 /* OfficeAttendanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B0B6A0F63FBFA4445354CA /* OfficeAttendanceTests.swift */; };
+		407AB46DDCF52DEEAC5D5AEB /* ColumnMapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9012880CCBF210D4981178BD /* ColumnMapTests.swift */; };
 		467C76D4DCDA3D26BBCD14D0 /* AttendanceCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655149E789A7552FDC5F95D3 /* AttendanceCoordinatorTests.swift */; };
 		4B4322183C0794179CA41418 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85419957765EE5A708BD11B4 /* AppDelegate.swift */; };
 		64569A0AAC246B673567C0A2 /* CheckInState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6197D6C68BE9EC790BFF2E12 /* CheckInState.swift */; };
@@ -45,7 +45,6 @@
 
 /* Begin PBXFileReference section */
 		05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceStatusTests.swift; sourceTree = "<group>"; };
-		AA11BB22CC33DD44EE55FF67 /* ColumnMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnMapTests.swift; sourceTree = "<group>"; };
 		247B519821475F58BAAB27BA /* OfficeAttendance.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OfficeAttendance.entitlements; sourceTree = "<group>"; };
 		2A0D428FB003762584DBA138 /* OfficeAttendance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OfficeAttendance.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2FEA09CC30513465A4FFE1C5 /* HistoryWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryWindowController.swift; sourceTree = "<group>"; };
@@ -62,6 +61,7 @@
 		85419957765EE5A708BD11B4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		88421078DE83E9A232A6C2A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8985095425240345AD2049E5 /* MondayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MondayService.swift; sourceTree = "<group>"; };
+		9012880CCBF210D4981178BD /* ColumnMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnMapTests.swift; sourceTree = "<group>"; };
 		96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStoreTests.swift; sourceTree = "<group>"; };
 		B08A90B7B82177941DA8BF2E /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		B1BFC4747573FF55C3F554F7 /* NetworkMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitorTests.swift; sourceTree = "<group>"; };
@@ -163,7 +163,7 @@
 			isa = PBXGroup;
 			children = (
 				05B76C8113589F97678EF288 /* AttendanceStatusTests.swift */,
-				AA11BB22CC33DD44EE55FF67 /* ColumnMapTests.swift */,
+				9012880CCBF210D4981178BD /* ColumnMapTests.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -310,7 +310,7 @@
 			files = (
 				467C76D4DCDA3D26BBCD14D0 /* AttendanceCoordinatorTests.swift in Sources */,
 				27CADA61FDD6578878753466 /* AttendanceStatusTests.swift in Sources */,
-				AA11BB22CC33DD44EE55FF66 /* ColumnMapTests.swift in Sources */,
+				407AB46DDCF52DEEAC5D5AEB /* ColumnMapTests.swift in Sources */,
 				C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */,
 				B58DC28E633D67301B58C7B9 /* MondayServiceTests.swift in Sources */,
 				720B431EEBD0E34EA0D52AEA /* NetworkMonitorTests.swift in Sources */,
