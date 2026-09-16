@@ -29,4 +29,25 @@ final class NetworkMonitorTests: XCTestCase {
         XCTAssertFalse(resultIP)
         XCTAssertFalse(resultDNS)
     }
+
+    func test_ipMatches_normalisesPrefix_withoutTrailingDot() {
+        // "9" without trailing dot should still match "9.x.x.x"
+        let monitor = NetworkMonitor()
+        XCTAssertTrue(monitor.ipMatches(ip: "9.123.45.67", prefix: "9"))
+    }
+
+    func test_ipMatches_returnsFalse_forEmptyPrefix() {
+        let monitor = NetworkMonitor()
+        XCTAssertFalse(monitor.ipMatches(ip: "9.123.45.67", prefix: ""))
+    }
+
+    func test_dnsMatches_returnsTrue_forExactSuffix() {
+        let monitor = NetworkMonitor()
+        XCTAssertTrue(monitor.dnsMatches(domain: "ibm.com", suffix: "ibm.com"))
+    }
+
+    func test_dnsMatches_returnsFalse_forEmptySuffix() {
+        let monitor = NetworkMonitor()
+        XCTAssertFalse(monitor.dnsMatches(domain: "subdomain.ibm.com", suffix: ""))
+    }
 }

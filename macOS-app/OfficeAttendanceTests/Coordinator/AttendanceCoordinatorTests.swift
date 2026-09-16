@@ -40,4 +40,30 @@ final class AttendanceCoordinatorTests: XCTestCase {
         XCTAssertTrue(coordinator.alreadyCheckedIn(for: key))
         UserDefaults.standard.removeObject(forKey: key)
     }
+
+    func test_todayKey_hasAttendancePrefixAndISODate() {
+        let coordinator = AttendanceCoordinator(
+            credentialStore: CredentialStore(),
+            networkMonitor: NetworkMonitor(),
+            mondayService: MondayService()
+        )
+        let key = coordinator.todayKey()
+        // Must start with "attendance-"
+        XCTAssertTrue(key.hasPrefix("attendance-"), "key should start with 'attendance-', got: \(key)")
+        // The date portion must be parseable as yyyy-MM-dd
+        let datePart = String(key.dropFirst("attendance-".count))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        XCTAssertNotNil(formatter.date(from: datePart), "date portion '\(datePart)' is not a valid yyyy-MM-dd date")
+    }
+
+    func test_todayKey_isStableWithinSameDay() {
+        let coordinator = AttendanceCoordinator(
+            credentialStore: CredentialStore(),
+            networkMonitor: NetworkMonitor(),
+            mondayService: MondayService()
+        )
+        XCTAssertEqual(coordinator.todayKey(), coordinator.todayKey())
+    }
 }

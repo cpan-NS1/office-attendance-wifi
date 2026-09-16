@@ -20,4 +20,19 @@ final class AttendanceStatusTests: XCTestCase {
             XCTAssertFalse(status.icon.isEmpty, "\(status) has empty icon")
         }
     }
+
+    func test_allCases_haveNonEmptyMenuLabel() {
+        for status in AttendanceStatus.allCases {
+            XCTAssertFalse(status.menuLabel.isEmpty, "\(status) has empty menuLabel")
+        }
+    }
+
+    func test_menuLabel_matchesMondayValue_forAllCases() {
+        // menuLabel and mondayValue are intentionally identical in this app;
+        // this test ensures they stay in sync if either is ever changed.
+        for status in AttendanceStatus.allCases {
+            XCTAssertEqual(status.menuLabel, status.mondayValue,
+                           "\(status) menuLabel and mondayValue diverged")
+        }
+    }
 }
