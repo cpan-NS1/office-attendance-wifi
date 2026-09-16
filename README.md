@@ -13,6 +13,20 @@ Two independent implementations of the same idea — automatically log your dail
 
 A native, self-contained menu-bar application built with Swift and SwiftUI. Runs as a background accessory, detects the office network using IP prefix / DNS domain, and checks you in automatically. Provides a Settings window for configuration — no terminal required after the first launch.
 
+### Storage
+
+All configuration and history is stored in `~/.officeattendance/` in your home folder:
+
+```
+~/.officeattendance/
+  config.json    ← API token, board ID, employee ID, network settings, column map
+  history.json   ← daily attendance entries [{date, status}, ...]
+```
+
+Both files are created with permissions `0600` (owner read/write only) and the directory with `0700`. This means your settings persist across app updates and reinstalls — you will never need to re-enter your credentials after updating.
+
+Existing installations are migrated automatically on first launch after update.
+
 ### Build & install
 
 ```zsh

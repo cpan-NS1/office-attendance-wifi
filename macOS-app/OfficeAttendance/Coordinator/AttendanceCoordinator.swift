@@ -26,11 +26,15 @@ final class AttendanceCoordinator: ObservableObject {
     }
 
     func start() {
+        print("[Coordinator] start() called")
+        credentialStore.migrateFromUserDefaultsIfNeeded()
         guard let credentials = credentialStore.load() else {
+            print("[Coordinator] start() — no credentials, returning early")
             // No credentials — stay idle; SettingsWindow will be shown by AppDelegate
             NotificationService.shared.sendSetupReminder()
             return
         }
+        print("[Coordinator] start() — credentials loaded, ipPrefix='\(credentials.ipPrefix)' dnsDomain='\(credentials.dnsDomain)'")
 
         // Restore today's status from UserDefaults so the menu is correct immediately,
         // even before any network check or API call.
@@ -46,16 +50,15 @@ final class AttendanceCoordinator: ObservableObject {
         scheduleMidnightReset()
     }
 
-    /// Seeds `checkInState` from today's persisted UserDefaults value so the
-    /// menu reflects the correct status immediately on launch, and sends a
-    /// notification so the user knows what was already logged.
+    /// Seeds `checkInState` from today's persisted value so the menu reflects
+    /// the correct status immediately on launch, and sends a notification so
+    /// the user knows what was already logged.
     private func restoreStateFromDefaults() {
-        let key = todayKey()
-        guard let saved = UserDefaults.standard.string(forKey: key),
-              let status = AttendanceStatus.allCases.first(where: { $0.mondayValue == saved })
+        let today = todayDateString()
+        guard let entry = credentialStore.loadHistory().first(where: { $0.date == today })
         else { return }
-        checkInState = .checkedIn(status)
-        NotificationService.shared.sendCheckInNotification(status: status)
+        checkInState = .checkedIn(entry.status)
+        NotificationService.shared.sendCheckInNotification(status: entry.status)
     }
 
     func manualCheckIn(status: AttendanceStatus) async {
@@ -64,9 +67,8 @@ final class AttendanceCoordinator: ObservableObject {
         do {
             try await mondayService.checkIn(status: status, credentials: credentials,
                                             columnMap: columnMap)
-            let key = todayKey()
             if status == .office { markOfficeSeen() }
-            UserDefaults.standard.set(status.mondayValue, forKey: key)
+            credentialStore.saveAttendance(date: todayDateString(), status: status)
             checkInState = .checkedIn(status)
             NotificationService.shared.sendChangeConfirmation(status: status)
         } catch {
@@ -82,23 +84,23 @@ final class AttendanceCoordinator: ObservableObject {
         return weekday == 1 || weekday == 7 // Sun or Sat
     }
 
-    func alreadyCheckedIn(for key: String) -> Bool {
-        UserDefaults.standard.string(forKey: key) != nil
+    func alreadyCheckedIn(for date: String) -> Bool {
+        credentialStore.loadHistory().contains { $0.date == date }
     }
 
-    func todayKey() -> String {
+    func todayDateString(date: Date = Date()) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        return "attendance-\(formatter.string(from: Date()))"
+        return formatter.string(from: date)
     }
+
+    /// Legacy shim kept for any call sites that still use the old key-based API.
+    func todayKey() -> String { "attendance-\(todayDateString())" }
 
     /// Key used to persist whether office WiFi was detected at any point today.
     func officeSeenTodayKey() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return "attendance-office-\(formatter.string(from: Date()))"
+        "attendance-office-\(todayDateString())"
     }
 
     func officeWasSeenToday() -> Bool {
@@ -115,14 +117,14 @@ final class AttendanceCoordinator: ObservableObject {
     /// - Office WiFi: proceed only if not already checked in as office today.
     /// - Non-office WiFi: proceed only if office was never seen today AND not yet checked in at all.
     func shouldUpdate(isOnOfficeNetwork: Bool) -> Bool {
-        let key = todayKey()
+        let today = todayDateString()
         if isOnOfficeNetwork {
             // Office always wins, but skip if already recorded as office.
-            let currentValue = UserDefaults.standard.string(forKey: key)
-            return currentValue != AttendanceStatus.office.mondayValue
+            let existing = credentialStore.loadHistory().first(where: { $0.date == today })
+            return existing?.status != .office
         } else {
             // WFH only if office hasn't been seen today and not yet checked in.
-            return !officeWasSeenToday() && !alreadyCheckedIn(for: key)
+            return !officeWasSeenToday() && !alreadyCheckedIn(for: today)
         }
     }
 
@@ -130,18 +132,24 @@ final class AttendanceCoordinator: ObservableObject {
 
     private func handleNetworkChange(isOnOfficeNetwork: Bool,
                                      credentials: CredentialStore.Credentials) {
-        guard !isWeekend() else { return }
-        guard shouldUpdate(isOnOfficeNetwork: isOnOfficeNetwork) else { return }
-        guard let columnMap = credentialStore.loadColumnMap() else { return }
+        print("[Coordinator] handleNetworkChange isOnOfficeNetwork=\(isOnOfficeNetwork)")
+        guard !isWeekend() else { print("[Coordinator] blocked — weekend"); return }
+        guard shouldUpdate(isOnOfficeNetwork: isOnOfficeNetwork) else { print("[Coordinator] blocked — shouldUpdate=false"); return }
+        guard let columnMap = credentialStore.loadColumnMap() else {
+            print("[Coordinator] blocked — no columnMap")
+            checkInState = .error("Setup incomplete — please open Settings and verify your board")
+            NotificationService.shared.sendSetupReminder()
+            return
+        }
+        print("[Coordinator] proceeding to check in as \(isOnOfficeNetwork ? "office" : "wfh")")
 
         let status: AttendanceStatus = isOnOfficeNetwork ? .office : .wfh
-        let key = todayKey()
         Task {
             do {
                 try await mondayService.checkIn(status: status, credentials: credentials,
                                                 columnMap: columnMap)
                 if isOnOfficeNetwork { markOfficeSeen() }
-                UserDefaults.standard.set(status.mondayValue, forKey: key)
+                credentialStore.saveAttendance(date: todayDateString(), status: status)
                 checkInState = .checkedIn(status)
                 NotificationService.shared.sendCheckInNotification(status: status)
             } catch {

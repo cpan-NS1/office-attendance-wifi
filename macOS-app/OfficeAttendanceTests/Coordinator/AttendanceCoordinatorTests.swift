@@ -3,12 +3,33 @@ import XCTest
 
 @MainActor
 final class AttendanceCoordinatorTests: XCTestCase {
-    func test_isWeekend_returnsTrue_forSaturday() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
+    var store: CredentialStore!
+    var coordinator: AttendanceCoordinator!
+    var tempDir: URL!
+
+    override func setUp() {
+        super.setUp()
+        tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        store = CredentialStore(appDir: tempDir)
+        coordinator = AttendanceCoordinator(
+            credentialStore: store,
             networkMonitor: NetworkMonitor(),
             mondayService: MondayService()
         )
+        // Clear the transient office-seen flag before each test
+        UserDefaults.standard.removeObject(forKey: coordinator.officeSeenTodayKey())
+    }
+
+    override func tearDown() {
+        UserDefaults.standard.removeObject(forKey: coordinator.officeSeenTodayKey())
+        try? FileManager.default.removeItem(at: tempDir)
+        super.tearDown()
+    }
+
+    // MARK: - isWeekend
+
+    func test_isWeekend_returnsTrue_forSaturday() {
         var components = DateComponents()
         components.year = 2025; components.month = 7; components.day = 19 // Saturday
         let saturday = Calendar.current.date(from: components)!
@@ -16,227 +37,108 @@ final class AttendanceCoordinatorTests: XCTestCase {
     }
 
     func test_isWeekend_returnsFalse_forMonday() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
         var components = DateComponents()
         components.year = 2025; components.month = 7; components.day = 14 // Monday
         let monday = Calendar.current.date(from: components)!
         XCTAssertFalse(coordinator.isWeekend(date: monday))
     }
 
-    func test_alreadyCheckedIn_usesUserDefaults() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let key = "attendance-2025-07-14"
-        UserDefaults.standard.removeObject(forKey: key)
-        XCTAssertFalse(coordinator.alreadyCheckedIn(for: key))
-        UserDefaults.standard.set("Office", forKey: key)
-        XCTAssertTrue(coordinator.alreadyCheckedIn(for: key))
-        UserDefaults.standard.removeObject(forKey: key)
-    }
+    // MARK: - todayDateString / todayKey
 
-    func test_todayKey_hasAttendancePrefixAndISODate() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let key = coordinator.todayKey()
-        // Must start with "attendance-"
-        XCTAssertTrue(key.hasPrefix("attendance-"), "key should start with 'attendance-', got: \(key)")
-        // The date portion must be parseable as yyyy-MM-dd
-        let datePart = String(key.dropFirst("attendance-".count))
+    func test_todayDateString_isValidISODate() {
+        let dateStr = coordinator.todayDateString()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        XCTAssertNotNil(formatter.date(from: datePart), "date portion '\(datePart)' is not a valid yyyy-MM-dd date")
+        XCTAssertNotNil(formatter.date(from: dateStr),
+                        "'\(dateStr)' is not a valid yyyy-MM-dd date")
     }
 
-    func test_todayKey_isStableWithinSameDay() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        XCTAssertEqual(coordinator.todayKey(), coordinator.todayKey())
+    func test_todayDateString_isStableWithinSameDay() {
+        XCTAssertEqual(coordinator.todayDateString(), coordinator.todayDateString())
+    }
+
+    func test_todayKey_hasAttendancePrefix() {
+        XCTAssertTrue(coordinator.todayKey().hasPrefix("attendance-"))
     }
 
     // MARK: - officeSeenTodayKey
 
     func test_officeSeenTodayKey_hasOfficePrefixAndISODate() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
         let key = coordinator.officeSeenTodayKey()
-        XCTAssertTrue(key.hasPrefix("attendance-office-"), "key should start with 'attendance-office-', got: \(key)")
+        XCTAssertTrue(key.hasPrefix("attendance-office-"),
+                      "key should start with 'attendance-office-', got: \(key)")
         let datePart = String(key.dropFirst("attendance-office-".count))
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        XCTAssertNotNil(formatter.date(from: datePart), "date portion '\(datePart)' is not a valid yyyy-MM-dd date")
+        XCTAssertNotNil(formatter.date(from: datePart),
+                        "date portion '\(datePart)' is not a valid yyyy-MM-dd date")
     }
 
-    func test_officeSeenTodayKey_isStableWithinSameDay() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        XCTAssertEqual(coordinator.officeSeenTodayKey(), coordinator.officeSeenTodayKey())
+    // MARK: - alreadyCheckedIn
+
+    func test_alreadyCheckedIn_returnsFalse_whenNoEntryInStore() {
+        XCTAssertFalse(coordinator.alreadyCheckedIn(for: "2025-07-14"))
+    }
+
+    func test_alreadyCheckedIn_returnsTrue_afterSavingAttendance() {
+        store.saveAttendance(date: "2025-07-14", status: .office)
+        XCTAssertTrue(coordinator.alreadyCheckedIn(for: "2025-07-14"))
     }
 
     // MARK: - officeWasSeenToday / markOfficeSeen
 
     func test_officeWasSeenToday_returnsFalse_whenNotSet() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let key = coordinator.officeSeenTodayKey()
-        UserDefaults.standard.removeObject(forKey: key)
         XCTAssertFalse(coordinator.officeWasSeenToday())
     }
 
     func test_markOfficeSeen_causesOfficeWasSeenTodayToReturnTrue() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let key = coordinator.officeSeenTodayKey()
-        UserDefaults.standard.removeObject(forKey: key)
         coordinator.markOfficeSeen()
         XCTAssertTrue(coordinator.officeWasSeenToday())
-        UserDefaults.standard.removeObject(forKey: key)
     }
 
-    // MARK: - shouldUpdate logic
+    // MARK: - shouldUpdate
 
     func test_shouldUpdateToWFH_returnsFalse_whenOfficePreviouslySeen() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let officeKey = coordinator.officeSeenTodayKey()
-        let attendanceKey = coordinator.todayKey()
-        // Simulate: office was seen earlier today (e.g. morning), now on home WiFi
-        UserDefaults.standard.set(true, forKey: officeKey)
-        UserDefaults.standard.set(AttendanceStatus.office.mondayValue, forKey: attendanceKey)
-
+        coordinator.markOfficeSeen()
+        store.saveAttendance(date: coordinator.todayDateString(), status: .office)
         XCTAssertFalse(coordinator.shouldUpdate(isOnOfficeNetwork: false),
                        "WFH update should be suppressed when office was seen today")
-
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.removeObject(forKey: attendanceKey)
     }
 
     func test_shouldUpdateToWFH_returnsTrue_whenOfficeNotSeenAndNotCheckedIn() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let officeKey = coordinator.officeSeenTodayKey()
-        let attendanceKey = coordinator.todayKey()
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.removeObject(forKey: attendanceKey)
-
         XCTAssertTrue(coordinator.shouldUpdate(isOnOfficeNetwork: false),
                       "WFH update should proceed when office not seen and not checked in")
-
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.removeObject(forKey: attendanceKey)
     }
 
     func test_shouldUpdateToWFH_returnsFalse_whenAlreadyCheckedInAsWFH() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let officeKey = coordinator.officeSeenTodayKey()
-        let attendanceKey = coordinator.todayKey()
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.set(AttendanceStatus.wfh.mondayValue, forKey: attendanceKey)
-
+        store.saveAttendance(date: coordinator.todayDateString(), status: .wfh)
         XCTAssertFalse(coordinator.shouldUpdate(isOnOfficeNetwork: false),
                        "WFH update should be suppressed when already checked in as WFH")
-
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.removeObject(forKey: attendanceKey)
     }
 
-    func test_shouldUpdateToOffice_returnsTrue_evenWhenAlreadyCheckedInAsWFH() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let officeKey = coordinator.officeSeenTodayKey()
-        let attendanceKey = coordinator.todayKey()
-        // Simulate: woke up at home → set WFH, then drove to office
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.set(AttendanceStatus.wfh.mondayValue, forKey: attendanceKey)
-
+    func test_shouldUpdateToOffice_returnsTrue_whenAlreadyCheckedInAsWFH() {
+        store.saveAttendance(date: coordinator.todayDateString(), status: .wfh)
         XCTAssertTrue(coordinator.shouldUpdate(isOnOfficeNetwork: true),
                       "Office update should override an existing WFH check-in")
-
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.removeObject(forKey: attendanceKey)
     }
 
     func test_shouldUpdateToOffice_returnsFalse_whenAlreadyCheckedInAsOffice() {
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let officeKey = coordinator.officeSeenTodayKey()
-        let attendanceKey = coordinator.todayKey()
-        UserDefaults.standard.set(true, forKey: officeKey)
-        UserDefaults.standard.set(AttendanceStatus.office.mondayValue, forKey: attendanceKey)
-
+        coordinator.markOfficeSeen()
+        store.saveAttendance(date: coordinator.todayDateString(), status: .office)
         XCTAssertFalse(coordinator.shouldUpdate(isOnOfficeNetwork: true),
                        "Office update should be a no-op when already checked in as office")
-
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.removeObject(forKey: attendanceKey)
     }
 
     // MARK: - Manual check-in office stickiness invariant
 
     func test_shouldUpdateToWFH_returnsFalse_afterManualOfficeCheckIn() {
         // Simulates: user manually selects Office from the menu, then later wakes
-        // up at home — the sticky flag must have been set by the manual check-in
-        // so WFH is suppressed.
-        let coordinator = AttendanceCoordinator(
-            credentialStore: CredentialStore(),
-            networkMonitor: NetworkMonitor(),
-            mondayService: MondayService()
-        )
-        let officeKey = coordinator.officeSeenTodayKey()
-        let attendanceKey = coordinator.todayKey()
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.removeObject(forKey: attendanceKey)
-
-        // Replicate what manualCheckIn does on success for .office
+        // up at home — the sticky flag must suppress the WFH update.
         coordinator.markOfficeSeen()
-        UserDefaults.standard.set(AttendanceStatus.office.mondayValue, forKey: attendanceKey)
-
+        store.saveAttendance(date: coordinator.todayDateString(), status: .office)
         XCTAssertFalse(coordinator.shouldUpdate(isOnOfficeNetwork: false),
                        "WFH should be suppressed after a manual office check-in")
-
-        UserDefaults.standard.removeObject(forKey: officeKey)
-        UserDefaults.standard.removeObject(forKey: attendanceKey)
     }
 }
