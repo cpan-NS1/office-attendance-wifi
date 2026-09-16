@@ -19,6 +19,12 @@ final class AttendanceCoordinator: ObservableObject {
         self.mondayService = mondayService
     }
 
+    /// Triggers an immediate network re-evaluation — called on wake from sleep.
+    func checkNetworkNow() {
+        guard let credentials = credentialStore.load() else { return }
+        networkMonitor.checkCurrentNetwork(credentials: credentials)
+    }
+
     func start() {
         guard let credentials = credentialStore.load() else {
             // No credentials — stay idle; SettingsWindow will be shown by AppDelegate
@@ -59,6 +65,7 @@ final class AttendanceCoordinator: ObservableObject {
             try await mondayService.checkIn(status: status, credentials: credentials,
                                             columnMap: columnMap)
             let key = todayKey()
+            if status == .office { markOfficeSeen() }
             UserDefaults.standard.set(status.mondayValue, forKey: key)
             checkInState = .checkedIn(status)
             NotificationService.shared.sendChangeConfirmation(status: status)
@@ -86,20 +93,54 @@ final class AttendanceCoordinator: ObservableObject {
         return "attendance-\(formatter.string(from: Date()))"
     }
 
+    /// Key used to persist whether office WiFi was detected at any point today.
+    func officeSeenTodayKey() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return "attendance-office-\(formatter.string(from: Date()))"
+    }
+
+    func officeWasSeenToday() -> Bool {
+        UserDefaults.standard.bool(forKey: officeSeenTodayKey())
+    }
+
+    func markOfficeSeen() {
+        UserDefaults.standard.set(true, forKey: officeSeenTodayKey())
+    }
+
+    /// Returns whether a network-triggered check-in should proceed.
+    ///
+    /// Rules:
+    /// - Office WiFi: proceed only if not already checked in as office today.
+    /// - Non-office WiFi: proceed only if office was never seen today AND not yet checked in at all.
+    func shouldUpdate(isOnOfficeNetwork: Bool) -> Bool {
+        let key = todayKey()
+        if isOnOfficeNetwork {
+            // Office always wins, but skip if already recorded as office.
+            let currentValue = UserDefaults.standard.string(forKey: key)
+            return currentValue != AttendanceStatus.office.mondayValue
+        } else {
+            // WFH only if office hasn't been seen today and not yet checked in.
+            return !officeWasSeenToday() && !alreadyCheckedIn(for: key)
+        }
+    }
+
     // MARK: - Private
 
     private func handleNetworkChange(isOnOfficeNetwork: Bool,
                                      credentials: CredentialStore.Credentials) {
         guard !isWeekend() else { return }
-        let key = todayKey()
-        guard !alreadyCheckedIn(for: key) else { return }
+        guard shouldUpdate(isOnOfficeNetwork: isOnOfficeNetwork) else { return }
         guard let columnMap = credentialStore.loadColumnMap() else { return }
 
         let status: AttendanceStatus = isOnOfficeNetwork ? .office : .wfh
+        let key = todayKey()
         Task {
             do {
                 try await mondayService.checkIn(status: status, credentials: credentials,
                                                 columnMap: columnMap)
+                if isOnOfficeNetwork { markOfficeSeen() }
                 UserDefaults.standard.set(status.mondayValue, forKey: key)
                 checkInState = .checkedIn(status)
                 NotificationService.shared.sendCheckInNotification(status: status)

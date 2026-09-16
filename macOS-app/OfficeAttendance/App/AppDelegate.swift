@@ -56,7 +56,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Listen for notification-triggered actions
         NotificationCenter.default.addObserver(self, selector: #selector(openSettings),
                                                name: .openSettings, object: nil)
-        
+
+        // Re-evaluate network on wake from sleep
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleWake),
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
     }
 
     /// Groups for the status submenu structure.
@@ -181,6 +188,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func openSettings() {
         settingsWindowController?.show()
+    }
+
+    @objc private func handleWake() {
+        // Delay to allow WiFi to fully associate and obtain a DHCP lease after wake.
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            self?.coordinator?.checkNetworkNow()
+        }
     }
 
     private func restartCoordinator() {
