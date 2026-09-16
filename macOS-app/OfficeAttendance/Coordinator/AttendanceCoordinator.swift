@@ -26,15 +26,12 @@ final class AttendanceCoordinator: ObservableObject {
     }
 
     func start() {
-        print("[Coordinator] start() called")
         credentialStore.migrateFromUserDefaultsIfNeeded()
         guard let credentials = credentialStore.load() else {
-            print("[Coordinator] start() — no credentials, returning early")
             // No credentials — stay idle; SettingsWindow will be shown by AppDelegate
             NotificationService.shared.sendSetupReminder()
             return
         }
-        print("[Coordinator] start() — credentials loaded, ipPrefix='\(credentials.ipPrefix)' dnsDomain='\(credentials.dnsDomain)'")
 
         // Restore today's status from UserDefaults so the menu is correct immediately,
         // even before any network check or API call.
@@ -132,16 +129,13 @@ final class AttendanceCoordinator: ObservableObject {
 
     private func handleNetworkChange(isOnOfficeNetwork: Bool,
                                      credentials: CredentialStore.Credentials) {
-        print("[Coordinator] handleNetworkChange isOnOfficeNetwork=\(isOnOfficeNetwork)")
-        guard !isWeekend() else { print("[Coordinator] blocked — weekend"); return }
-        guard shouldUpdate(isOnOfficeNetwork: isOnOfficeNetwork) else { print("[Coordinator] blocked — shouldUpdate=false"); return }
+        guard !isWeekend() else { return }
+        guard shouldUpdate(isOnOfficeNetwork: isOnOfficeNetwork) else { return }
         guard let columnMap = credentialStore.loadColumnMap() else {
-            print("[Coordinator] blocked — no columnMap")
             checkInState = .error("Setup incomplete — please open Settings and verify your board")
             NotificationService.shared.sendSetupReminder()
             return
         }
-        print("[Coordinator] proceeding to check in as \(isOnOfficeNetwork ? "office" : "wfh")")
 
         let status: AttendanceStatus = isOnOfficeNetwork ? .office : .wfh
         Task {

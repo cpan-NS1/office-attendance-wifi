@@ -28,26 +28,34 @@ final class NetworkMonitor: ObservableObject {
         }
         m.start(queue: queue)
         monitor = m
-        // Fire an immediate evaluation so callers don't wait for the first
-        // path-change event (which never fires if already connected).
-        checkCurrentNetwork(credentials: credentials)
+        // Evaluate synchronously on the caller (main) thread so isOnOfficeNetwork
+        // reflects the real value before any subscriber is attached. The IP/DNS
+        // reads are fast syscalls and safe to call on the main thread.
+        evaluateAndPublishCurrentNetwork(credentials: credentials)
     }
 
-    /// Evaluates the current network state and publishes the result immediately.
+    /// Evaluates the current network state and publishes the result on the main thread.
+    /// Safe to call from any thread; publishes synchronously when already on main.
     func checkCurrentNetwork(credentials: CredentialStore.Credentials) {
-        queue.async { [weak self] in
-            guard let self else { return }
-            let ip = self.currentIPAddress() ?? ""
-            let dns = self.currentDNSDomain() ?? ""
-            let ipOk = self.ipMatches(ip: ip, prefix: credentials.ipPrefix)
-            let dnsOk = self.dnsMatches(domain: dns, suffix: credentials.dnsDomain)
-            let result = ipOk || dnsOk
-            DispatchQueue.main.async {
-                self.detectedIP = ip
-                self.detectedDNS = dns
-                self.isOnOfficeNetwork = result
+        if Thread.isMainThread {
+            evaluateAndPublishCurrentNetwork(credentials: credentials)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.evaluateAndPublishCurrentNetwork(credentials: credentials)
             }
         }
+    }
+
+    // MARK: - Private helpers
+
+    private func evaluateAndPublishCurrentNetwork(credentials: CredentialStore.Credentials) {
+        let ip = currentIPAddress() ?? ""
+        let dns = currentDNSDomain() ?? ""
+        let result = ipMatches(ip: ip, prefix: credentials.ipPrefix)
+                  || dnsMatches(domain: dns, suffix: credentials.dnsDomain)
+        detectedIP = ip
+        detectedDNS = dns
+        isOnOfficeNetwork = result
     }
 
     func stop() {

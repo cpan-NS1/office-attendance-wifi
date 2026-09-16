@@ -209,6 +209,18 @@ struct SettingsView: View {
         employeeId = creds.employeeId
         ipPrefix = creds.ipPrefix
         dnsDomain = creds.dnsDomain
+        // Restore saved column map so Save is enabled without re-verifying
+        if let map = credentialStore.loadColumnMap() {
+            columnMap = map
+            manualEmployeeCol = map.employeeColumnId
+            manualWeekStartCol = map.weekStartColumnId
+            manualMon = map.mondayColumnId
+            manualTue = map.tuesdayColumnId
+            manualWed = map.wednesdayColumnId
+            manualThu = map.thursdayColumnId
+            manualFri = map.fridayColumnId
+            verifyStatus = .success(map)
+        }
     }
 }
 
