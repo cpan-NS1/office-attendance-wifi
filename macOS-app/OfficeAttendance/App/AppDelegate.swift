@@ -59,6 +59,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
     }
 
+    /// Groups for the status submenu structure.
+    /// Each entry is (parentLabel, members). A group with one remaining
+    /// member after exclusion is flattened to a plain item.
+    private let statusGroups: [(label: String, members: [AttendanceStatus])] = [
+        ("Office",   [.office]),
+        ("WFH",      [.wfh, .wfhSickness, .wfhUnplannedIssues, .wfhWeatherWarning]),
+        ("Vacation", [.vacation, .loa, .bankHoliday, .travel]),
+        ("Sick",     [.sick]),
+    ]
+
+    /// Appends status items to `menu`. Single-member groups appear as plain
+    /// items; multi-member groups use a submenu. The currently active status
+    /// is excluded; if that empties a group its parent is hidden too.
+    @MainActor private func addStatusItems(to menu: NSMenu,
+                                           prefix: String = "",
+                                           excluding current: AttendanceStatus? = nil) {
+        for group in statusGroups {
+            let candidates = group.members.filter { $0 != current }
+            guard !candidates.isEmpty else { continue }
+
+            if group.members.count == 1 {
+                // Single-member group — plain item
+                let item = NSMenuItem(title: "\(prefix)\(candidates[0].menuLabel)",
+                                     action: #selector(changeStatus(_:)),
+                                     keyEquivalent: "")
+                item.representedObject = candidates[0]
+                menu.addItem(item)
+            } else {
+                // Multi-member group — submenu
+                let subMenu = NSMenu()
+                for s in candidates {
+                    let item = NSMenuItem(title: "\(prefix)\(s.menuLabel)",
+                                         action: #selector(changeStatus(_:)),
+                                         keyEquivalent: "")
+                    item.representedObject = s
+                    subMenu.addItem(item)
+                }
+                let parent = NSMenuItem(title: "\(prefix)\(group.label)…", action: nil, keyEquivalent: "")
+                parent.submenu = subMenu
+                menu.addItem(parent)
+            }
+        }
+    }
+
     @MainActor private func buildMenu() -> NSMenu {
         let menu = NSMenu()
 
@@ -81,11 +125,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 let changeHeader = NSMenuItem(title: "Change to:", action: nil, keyEquivalent: "")
                 changeHeader.isEnabled = false
                 menu.addItem(changeHeader)
-                for s in AttendanceStatus.allCases where s != status {
-                    let item = NSMenuItem(title: s.menuLabel, action: #selector(changeStatus(_:)), keyEquivalent: "")
-                    item.representedObject = s
-                    menu.addItem(item)
-                }
+                addStatusItems(to: menu, excluding: status)
             case .error(let msg):
                 self.statusItem?.button?.title = "🏢⚠️"
                 let errItem = NSMenuItem(title: "Error: \(msg)", action: nil, keyEquivalent: "")
@@ -97,11 +137,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 checkInHeader.isEnabled = false
                 menu.addItem(checkInHeader)
                 menu.addItem(.separator())
-                for s in AttendanceStatus.allCases {
-                    let item = NSMenuItem(title: "Set: \(s.menuLabel)", action: #selector(changeStatus(_:)), keyEquivalent: "")
-                    item.representedObject = s
-                    menu.addItem(item)
-                }
+                addStatusItems(to: menu, prefix: "Set: ")
             }
         }
 

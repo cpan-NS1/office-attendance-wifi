@@ -42,7 +42,8 @@ marker="$STATE_DIR/$today-${column_id}.done"
 # SwiftBar passes: --set <status>
 # ---------------------------------------------------------------------------
 if [[ "${1:-}" == "--set" ]]; then
-  chosen_status="${2:?missing status}"
+  shift  # consume --set; remaining args form the status (may be multi-word)
+  chosen_status="${*:?missing status}"
 
   if [[ -z "${MONDAY_TOKEN:-}" ]]; then
     log "MONDAY_TOKEN is not set in .env."
@@ -122,6 +123,60 @@ if (( weekday > 5 )); then
   exit 0
 fi
 
+# Build SwiftBar param string for a status value (handles multi-word values).
+# Usage: status_params "WFH: Sickness"  →  param1=--set param2=WFH: param3=Sickness
+status_params() {
+  local sval="$1" i=2 word params="param1=--set"
+  for word in ${=sval}; do
+    params+=" param${i}=${word}"
+    (( i++ ))
+  done
+  print -r -- "$params"
+}
+
+# Emit status menu items with submenu grouping (SwiftBar -- prefix = submenu).
+# $1 = label prefix ("Set: " or "")
+# $2 = status to exclude (current, or empty)
+emit_status_items() {
+  local prefix="$1" exclude="$2"
+
+  # Group: Office (single)
+  if [[ "$exclude" != "Office" ]]; then
+    echo "${prefix}Office | bash=$SCRIPT_PATH $(status_params "Office") terminal=false refresh=true"
+  fi
+
+  # Group: WFH (submenu)
+  local wfh_members=("WFH" "WFH: Sickness" "WFH: Unplanned Issues" "WFH: Weather Warning")
+  local wfh_candidates=()
+  for ws in "${wfh_members[@]}"; do
+    [[ "$ws" != "$exclude" ]] && wfh_candidates+=("$ws")
+  done
+  if (( ${#wfh_candidates[@]} > 0 )); then
+    echo "${prefix}WFH… | color=gray"
+    for ws in "${wfh_candidates[@]}"; do
+      echo "--${prefix}${ws} | bash=$SCRIPT_PATH $(status_params "$ws") terminal=false refresh=true"
+    done
+  fi
+
+  # Group: Vacation (submenu)
+  local vac_members=("Vacation" "LOA" "Bank Holiday" "Travel")
+  local vac_candidates=()
+  for vs in "${vac_members[@]}"; do
+    [[ "$vs" != "$exclude" ]] && vac_candidates+=("$vs")
+  done
+  if (( ${#vac_candidates[@]} > 0 )); then
+    echo "${prefix}Vacation… | color=gray"
+    for vs in "${vac_candidates[@]}"; do
+      echo "--${prefix}${vs} | bash=$SCRIPT_PATH $(status_params "$vs") terminal=false refresh=true"
+    done
+  fi
+
+  # Group: Sick (single)
+  if [[ "$exclude" != "Sick" ]]; then
+    echo "${prefix}Sick | bash=$SCRIPT_PATH $(status_params "Sick") terminal=false refresh=true"
+  fi
+}
+
 # Already logged today — show status with option to change.
 if [[ -f "$marker" ]]; then
   done_status=$(cat "$marker")
@@ -130,12 +185,8 @@ if [[ -f "$marker" ]]; then
   echo "---"
   echo "✅ Attendance logged: $done_status ($today)"
   echo "---"
-  echo "Change status:"
-  for s in Office WFH Sick Vacation Holiday; do
-    if [[ "$s" != "$done_status" ]]; then
-      echo "  Change to: $s | bash=$SCRIPT_PATH param1=--set param2=$s terminal=false refresh=true"
-    fi
-  done
+  echo "Change to:"
+  emit_status_items "" "$done_status"
   exit 0
 fi
 
@@ -176,10 +227,6 @@ echo "---"
 echo "Log attendance for $today ($network_note):"
 echo "---"
 # Default status shown first and bolded.
-echo "**Set: $default_status** | bash=$SCRIPT_PATH param1=--set param2=$default_status terminal=false refresh=true"
+echo "**Set: $default_status** | bash=$SCRIPT_PATH $(status_params "$default_status") terminal=false refresh=true"
 echo "---"
-for s in Office WFH Sick Vacation Holiday; do
-  if [[ "$s" != "$default_status" ]]; then
-    echo "Set: $s | bash=$SCRIPT_PATH param1=--set param2=$s terminal=false refresh=true"
-  fi
-done
+emit_status_items "Set: " "$default_status"
