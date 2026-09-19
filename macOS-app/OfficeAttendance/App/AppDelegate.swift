@@ -18,7 +18,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppLogger.shared.log("App launched (v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"))")
+
         let networkMonitor = NetworkMonitor()
+        AppLogger.shared.log("Setting up windows")
         settingsWindowController = SettingsWindowController(
             credentialStore: credentialStore,
             mondayService: mondayService,
@@ -33,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             networkMonitor: networkMonitor,
             mondayService: mondayService
         )
+        AppLogger.shared.log("Starting coordinator")
         Task { @MainActor [weak self] in self?.coordinator?.start() }
 
         coordinator?.$checkInState
@@ -44,13 +48,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         NotificationService.shared.requestPermission()
 
+        AppLogger.shared.log("Creating status bar item")
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem?.button?.title = "🏢?"
         statusItem?.menu = buildMenu()
+        AppLogger.shared.log("Status bar item created")
 
         // Show settings on first launch if not configured
         if credentialStore.load() == nil {
+            AppLogger.shared.log("No credentials found — showing settings")
             settingsWindowController?.show()
+        } else {
+            AppLogger.shared.log("Credentials loaded OK")
         }
 
         // Listen for notification-triggered actions

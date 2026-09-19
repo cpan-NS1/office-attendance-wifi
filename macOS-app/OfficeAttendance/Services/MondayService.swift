@@ -16,11 +16,21 @@ enum MondayError: Error, LocalizedError {
 
 final class MondayService {
     private let endpoint = URL(string: "https://api.monday.com/v2")!
-    private let session: URLSession = {
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 30
-        return URLSession(configuration: config)
-    }()
+    private let session: URLSession
+    /// Delay before the single retry on a transient network error (nanoseconds).
+    /// Exposed for test injection only; production default is 4 s.
+    let retryDelayNanoseconds: UInt64
+
+    init(session: URLSession? = nil, retryDelayNanoseconds: UInt64 = 4_000_000_000) {
+        if let session {
+            self.session = session
+        } else {
+            let config = URLSessionConfiguration.default
+            config.timeoutIntervalForRequest = 30
+            self.session = URLSession(configuration: config)
+        }
+        self.retryDelayNanoseconds = retryDelayNanoseconds
+    }
 
     // MARK: - Column Discovery
 
@@ -312,7 +322,19 @@ final class MondayService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(token, forHTTPHeaderField: "Authorization")
         request.httpBody = payload
-        let (data, _) = try await session.data(for: request)
-        return data
+
+        // Retry once on transient connection errors that occur when the network
+        // interface comes up but routes are not yet established (e.g. WiFi join,
+        // wake from sleep).
+        do {
+            let (data, _) = try await session.data(for: request)
+            return data
+        } catch let urlError as URLError
+            where urlError.code == .networkConnectionLost
+               || urlError.code == .notConnectedToInternet {
+            try await Task.sleep(nanoseconds: retryDelayNanoseconds)
+            let (data, _) = try await session.data(for: request)
+            return data
+        }
     }
 }

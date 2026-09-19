@@ -26,17 +26,22 @@ final class AttendanceCoordinator: ObservableObject {
     }
 
     func start() {
+        AppLogger.shared.log("Coordinator.start()")
         credentialStore.migrateFromUserDefaultsIfNeeded()
+        AppLogger.shared.log("Migration done")
         guard let credentials = credentialStore.load() else {
             // No credentials — stay idle; SettingsWindow will be shown by AppDelegate
+            AppLogger.shared.log("No credentials — coordinator idle")
             NotificationService.shared.sendSetupReminder()
             return
         }
 
+        AppLogger.shared.log("Credentials present — restoring state")
         // Restore today's status from UserDefaults so the menu is correct immediately,
         // even before any network check or API call.
         restoreStateFromDefaults()
 
+        AppLogger.shared.log("Starting network monitor")
         networkMonitor.start(credentials: credentials)
         networkMonitor.$isOnOfficeNetwork
             .receive(on: DispatchQueue.main)
