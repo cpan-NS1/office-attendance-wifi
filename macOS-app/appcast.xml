@@ -3,10 +3,35 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.3.3</title>
+      <sparkle:version>10</sparkle:version>
+      <sparkle:shortVersionString>1.3.3</sparkle:shortVersionString>
+      <pubDate>Sat, 19 Sep 2026 16:08:12 +0000</pubDate>
+      <description><![CDATA[
+<h2>What's New in 1.3.3</h2>
+<ul>
+  <li><b>Stability:</b> Retry transient Monday.com API network errors automatically.</li>
+  <li><b>Diagnostics:</b> Added launch diagnostics to surface setup and connectivity issues on first run.</li>
+</ul>
+      ]]></description>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.3.3/OfficeAttendance-1.3.3.dmg"
+                 sparkle:edSignature="p82KwYEtpKSs+zuyKAOFoEFqiC2C5pYxmfqENwdfQ8infQqavt3KwjSo2zo8PYtfgbMYUgI3uJXS/VeUW58OCA=="
+                 length="2706404"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.3.2</title>
       <sparkle:version>9</sparkle:version>
       <sparkle:shortVersionString>1.3.2</sparkle:shortVersionString>
       <pubDate>Wed, 16 Sep 2026 10:55:35 +0000</pubDate>
+      <description><![CDATA[
+        <h2>What's New in 1.3.2</h2>
+        <ul>
+          <li><b>Settings:</b> Added Board ID URL helper hint and enforced 7-digit Employee ID format.</li>
+          <li><b>History:</b> Persist remote Monday.com fetches directly to local cache.</li>
+          <li><b>Stability:</b> Retry transient network disconnects during WiFi switch / sleep wake.</li>
+        </ul>
+      ]]></description>
       <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.3.2/OfficeAttendance-1.3.2.dmg"
                  sparkle:edSignature="Goi9jeWNTwrsqG65JafD0msTAn61RgUQG4ooEoQiipn+7FmItBDWRBTcGIrsO3L+Qjs11dJ/mC2eOcQPtrbIBw=="
                  length="3744362"
