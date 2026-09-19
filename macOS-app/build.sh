@@ -36,11 +36,24 @@ MARKETING_VERSION=$(awk -F'"' '/^    MARKETING_VERSION:/{print $2}' project.yml)
 CURRENT_PROJECT_VERSION=$(awk -F'"' '/^    CURRENT_PROJECT_VERSION:/{print $2}' project.yml)
 
 # ── Flags ─────────────────────────────────────────────────────────────────────
+RELEASE_NOTES=""
 for arg in "$@"; do
   case $arg in
     --debug) CONFIGURATION="Debug" ;;
     --release=*)
       NEW_RELEASE_VERSION="${arg#--release=}"
+      ;;
+    --notes=*)
+      RELEASE_NOTES="${arg#--notes=}"
+      ;;
+    --notes-file=*)
+      NOTES_FILE="${arg#--notes-file=}"
+      if [[ -f "$NOTES_FILE" ]]; then
+        RELEASE_NOTES="$(cat "$NOTES_FILE")"
+      else
+        echo "Error: Notes file not found: $NOTES_FILE"
+        exit 1
+      fi
       ;;
     *) echo "Unknown argument: $arg"; exit 1 ;;
   esac
@@ -93,8 +106,7 @@ xcodebuild archive \
   CODE_SIGN_STYLE=Automatic \
   DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
   MARKETING_VERSION="$MARKETING_VERSION" \
-  CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION" \
-  | xcpretty || cat /dev/stdin
+  CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION"
 
 # ── Export ────────────────────────────────────────────────────────────────────
 echo "▶ Exporting..."
@@ -120,8 +132,7 @@ PLIST
 xcodebuild -exportArchive \
   -archivePath "$ARCHIVE_PATH" \
   -exportPath "$EXPORT_PATH" \
-  -exportOptionsPlist "$EXPORT_OPTIONS" \
-  | xcpretty || cat /dev/stdin
+  -exportOptionsPlist "$EXPORT_OPTIONS"
 
 APP_PATH="$EXPORT_PATH/$SCHEME.app"
 
@@ -148,29 +159,15 @@ rm -rf "$ICONSET_DIR"
 
 # Use hdiutil to make a compressed, internet-ready DMG
 TMP_DMG="$BUILD_DIR/tmp.dmg"
-VOLUME_NAME="Office Attendance"
+VOLUME_NAME="Office Attendance ${MARKETING_VERSION}"
 
 hdiutil create \
   -volname "$VOLUME_NAME" \
   -srcfolder "$APP_PATH" \
   -ov \
-  -format UDRW \
-  "$TMP_DMG"
-
-# Mount the writable image and set the volume icon
-MOUNT_DIR="$(mktemp -d /tmp/dmg-mount-XXXXXX)"
-hdiutil attach "$TMP_DMG" -mountpoint "$MOUNT_DIR" -nobrowse -quiet
-cp "$ICNS_PATH" "$MOUNT_DIR/.VolumeIcon.icns"
-SetFile -a C "$MOUNT_DIR" 2>/dev/null || true   # set custom-icon bit (requires Xcode CLI tools)
-hdiutil detach "$MOUNT_DIR" -quiet
-rm -rf "$MOUNT_DIR"
-
-hdiutil convert "$TMP_DMG" \
   -format UDZO \
   -imagekey zlib-level=9 \
-  -o "$DMG_PATH"
-
-rm -f "$TMP_DMG"
+  "$DMG_PATH"
 
 echo ""
 echo "✅ Done! DMG created at: $DMG_PATH"
@@ -220,8 +217,29 @@ if [[ -n "$SIGN_UPDATE" && "$CONFIGURATION" == "Release" ]]; then
 
   APPCAST="$(pwd)/appcast.xml"
 
+  # Build description tag if release notes were provided
+  DESCRIPTION_TAG=""
+  if [[ -n "${RELEASE_NOTES:-}" ]]; then
+    DESCRIPTION_TAG="      <description><![CDATA[
+${RELEASE_NOTES}
+      ]]></description>"
+  fi
+
   # Build the new <item> block
-  NEW_ITEM="    <item>
+  if [[ -n "$DESCRIPTION_TAG" ]]; then
+    NEW_ITEM="    <item>
+      <title>Version ${MARKETING_VERSION}</title>
+      <sparkle:version>${CURRENT_PROJECT_VERSION}</sparkle:version>
+      <sparkle:shortVersionString>${MARKETING_VERSION}</sparkle:shortVersionString>
+      <pubDate>${PUB_DATE}</pubDate>
+${DESCRIPTION_TAG}
+      <enclosure url=\"${ENCLOSURE_URL}\"
+                 sparkle:edSignature=\"${ED_SIG}\"
+                 length=\"${DMG_SIZE}\"
+                 type=\"application/octet-stream\"/>
+    </item>"
+  else
+    NEW_ITEM="    <item>
       <title>Version ${MARKETING_VERSION}</title>
       <sparkle:version>${CURRENT_PROJECT_VERSION}</sparkle:version>
       <sparkle:shortVersionString>${MARKETING_VERSION}</sparkle:shortVersionString>
@@ -231,6 +249,7 @@ if [[ -n "$SIGN_UPDATE" && "$CONFIGURATION" == "Release" ]]; then
                  length=\"${DMG_SIZE}\"
                  type=\"application/octet-stream\"/>
     </item>"
+  fi
 
   # Upsert the new item into appcast.xml: remove any existing entry for this
   # version, then prepend the fresh one so the file stays newest-first.
