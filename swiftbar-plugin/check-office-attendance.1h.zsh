@@ -194,12 +194,23 @@ fi
 current_ip=$(/usr/sbin/ipconfig getifaddr en0 2>/dev/null || true)
 dns_domain=$(scutil --dns 2>/dev/null | /usr/bin/awk '/search domain\[0\]/ { print $NF; exit }')
 
-on_office_network=0
-if [[ -n "$OFFICE_IP_PREFIX" && "$current_ip" == ${OFFICE_IP_PREFIX}* ]]; then
-  on_office_network=1
+# If a VPN tunnel is active (utun*/ppp* interface has an IP), we are working
+# remotely — even if DNS search domains appear corporate.
+# Filter for UP interfaces only — dormant system utun (e.g. iCloud Private
+# Relay placeholders) have POINTOPOINT but lack the UP flag.
+vpn_active=0
+if /usr/sbin/ifconfig 2>/dev/null | /usr/bin/grep -E '^(utun|ppp)[0-9]+:' | /usr/bin/grep -qE 'flags=[0-9a-fx]+<[^>]*\bUP\b[^>]*POINTOPOINT'; then
+  vpn_active=1
 fi
-if [[ -n "$OFFICE_DNS_DOMAIN" && "$dns_domain" == *"$OFFICE_DNS_DOMAIN"* ]]; then
-  on_office_network=1
+
+on_office_network=0
+if (( !vpn_active )); then
+  if [[ -n "$OFFICE_IP_PREFIX" && "$current_ip" == ${OFFICE_IP_PREFIX}* ]]; then
+    on_office_network=1
+  fi
+  if [[ -n "$OFFICE_DNS_DOMAIN" && "$dns_domain" == *"$OFFICE_DNS_DOMAIN"* ]]; then
+    on_office_network=1
+  fi
 fi
 
 if [[ ${FORCE_RUN:-0} != 1 ]] && (( !on_office_network )); then
@@ -207,7 +218,7 @@ if [[ ${FORCE_RUN:-0} != 1 ]] && (( !on_office_network )); then
   echo "---"
   echo "Not on office network — no update."
   echo "IP: ${current_ip:-<none>}  DNS: ${dns_domain:-<none>}"
-  log "Not on office network (IP: ${current_ip:-<none>}, DNS domain: ${dns_domain:-<none>}); no update."
+  log "Not on office network (IP: ${current_ip:-<none>}, DNS domain: ${dns_domain:-<none>}, VPN active: ${vpn_active}); no update."
   exit 0
 fi
 

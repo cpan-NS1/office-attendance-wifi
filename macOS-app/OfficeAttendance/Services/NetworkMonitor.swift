@@ -7,6 +7,10 @@ final class NetworkMonitor: ObservableObject {
     @Published private(set) var isOnOfficeNetwork: Bool = false
     @Published private(set) var detectedIP: String = ""
     @Published private(set) var detectedDNS: String = ""
+    @Published private(set) var isVPNActive: Bool = false
+
+    /// Override in tests to stub VPN state without touching live interfaces.
+    var vpnChecker: () -> Bool = { NetworkMonitor.checkVPNActive() }
 
     private var monitor: NWPathMonitor?
     private let queue = DispatchQueue(label: "com.ibm.office-attendance.network")
@@ -51,10 +55,13 @@ final class NetworkMonitor: ObservableObject {
     private func evaluateAndPublishCurrentNetwork(credentials: CredentialStore.Credentials) {
         let ip = currentIPAddress() ?? ""
         let dns = currentDNSDomain() ?? ""
-        let result = ipMatches(ip: ip, prefix: credentials.ipPrefix)
-                  || dnsMatches(domain: dns, suffix: credentials.dnsDomain)
+        let vpn = vpnChecker()
+        let result = !vpn
+                  && (ipMatches(ip: ip, prefix: credentials.ipPrefix)
+                   || dnsMatches(domain: dns, suffix: credentials.dnsDomain))
         detectedIP = ip
         detectedDNS = dns
+        isVPNActive = vpn
         isOnOfficeNetwork = result
     }
 
@@ -66,6 +73,7 @@ final class NetworkMonitor: ObservableObject {
     // MARK: - Testable helpers
 
     func evaluate(path: NWPath, credentials: CredentialStore.Credentials) -> Bool {
+        guard !vpnChecker() else { return false }
         let ip = currentIPAddress() ?? ""
         let dns = currentDNSDomain() ?? ""
         return ipMatches(ip: ip, prefix: credentials.ipPrefix)
@@ -82,6 +90,35 @@ final class NetworkMonitor: ObservableObject {
 
     func dnsMatches(domain: String, suffix: String) -> Bool {
         !domain.isEmpty && !suffix.isEmpty && domain.contains(suffix)
+    }
+
+    /// Returns true when a point-to-point VPN tunnel (utun* or ppp*) is active.
+    /// When on VPN from home the corporate DNS search domain leaks through the
+    /// tunnel, which would otherwise cause a false-positive office detection.
+    /// Made `static` so it can be referenced in the default `vpnChecker` closure
+    /// without capturing `self`, and so tests can call it directly.
+    static func checkVPNActive() -> Bool {
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&ifaddr) == 0 else { return false }
+        defer { freeifaddrs(ifaddr) }
+        var addr = ifaddr
+        while let current = addr {
+            let ifa = current.pointee
+            let name = String(cString: ifa.ifa_name)
+            let flags = Int32(ifa.ifa_flags)
+            // Require UP + RUNNING so dormant system utun interfaces (e.g. iCloud
+            // Private Relay placeholders) don't trigger a false VPN detection.
+            let isUp = (flags & (IFF_UP | IFF_RUNNING)) == (IFF_UP | IFF_RUNNING)
+            let isPointToPoint = (flags & IFF_POINTOPOINT) != 0
+            let isTunnel = name.hasPrefix("utun") || name.hasPrefix("ppp")
+            // Also require a non-nil address so unassigned tunnel slots are skipped.
+            let hasAddr = ifa.ifa_addr != nil
+            if isTunnel && isPointToPoint && isUp && hasAddr {
+                return true
+            }
+            addr = current.pointee.ifa_next
+        }
+        return false
     }
 
     private func currentIPAddress() -> String? {

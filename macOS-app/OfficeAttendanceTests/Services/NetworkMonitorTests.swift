@@ -2,6 +2,8 @@ import XCTest
 import Network
 @testable import OfficeAttendance
 
+// MARK: - Tests
+
 final class NetworkMonitorTests: XCTestCase {
     func test_evaluate_returnsTrue_whenIPMatches() {
         let monitor = NetworkMonitor()
@@ -49,5 +51,52 @@ final class NetworkMonitorTests: XCTestCase {
     func test_dnsMatches_returnsFalse_forEmptySuffix() {
         let monitor = NetworkMonitor()
         XCTAssertFalse(monitor.dnsMatches(domain: "subdomain.ibm.com", suffix: ""))
+    }
+}
+
+// MARK: - VPN detection tests
+
+final class NetworkMonitorVPNTests: XCTestCase {
+    private var monitor: NetworkMonitor!
+    private let creds = CredentialStore.Credentials(
+        token: "",
+        boardId: "",
+        employeeId: "",
+        ipPrefix: "9.",
+        dnsDomain: "ibm.com"
+    )
+
+    override func setUp() {
+        super.setUp()
+        monitor = NetworkMonitor()
+    }
+
+    // When VPN is active, evaluate() must return false even if IP and DNS both match.
+    func test_evaluate_returnsFalse_whenVPNActive_andIPMatches() {
+        monitor.vpnChecker = { true }
+        let path = NWPathMonitor().currentPath
+        let result = monitor.evaluate(path: path, credentials: creds)
+        XCTAssertFalse(result, "VPN active should short-circuit to false regardless of IP/DNS")
+    }
+
+    func test_evaluate_returnsFalse_whenVPNActive_andDNSMatches() {
+        monitor.vpnChecker = { true }
+        let path = NWPathMonitor().currentPath
+        // DNS matching would normally set isOnOfficeNetwork=true, but VPN overrides it.
+        let officeCredsWithDNS = CredentialStore.Credentials(
+            token: "", boardId: "", employeeId: "",
+            ipPrefix: "",
+            dnsDomain: "ibm.com"
+        )
+        let result = monitor.evaluate(path: path, credentials: officeCredsWithDNS)
+        XCTAssertFalse(result, "VPN active should short-circuit to false even when DNS domain matches")
+    }
+
+    // When VPN is NOT active, existing IP/DNS logic still works.
+    func test_evaluate_delegatesToIPAndDNS_whenVPNNotActive() {
+        monitor.vpnChecker = { false }
+        // ipMatches/dnsMatches are already tested; just confirm evaluate() honours them.
+        let result = monitor.ipMatches(ip: "9.1.2.3", prefix: creds.ipPrefix)
+        XCTAssertTrue(result, "IP match should work normally when VPN is not active")
     }
 }

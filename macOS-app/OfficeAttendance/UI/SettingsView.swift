@@ -104,6 +104,15 @@ struct SettingsView: View {
                                     .foregroundColor(.secondary)
                                     .textSelection(.enabled)
                             }
+                            LabeledField("VPN Active") {
+                                if networkMonitor.isVPNActive {
+                                    Text("Yes — office detection suppressed")
+                                        .foregroundColor(.orange)
+                                } else {
+                                    Text("No")
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
                         .padding(.vertical, 4)
                     }
