@@ -3,6 +3,19 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.3.4</title>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>1.3.4</sparkle:shortVersionString>
+      <pubDate>Mon, 21 Sep 2026 15:49:20 +0000</pubDate>
+      <description><![CDATA[
+<h2>What's New in 1.3.4</h2><ul><li><b>Fix:</b> Connecting to company VPN from home no longer triggers a false office check-in.</li><li><b>Settings:</b> Network Detection now shows a "VPN Active" indicator when office detection is suppressed.</li></ul>
+      ]]></description>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.3.4/OfficeAttendance-1.3.4.dmg"
+                 sparkle:edSignature="dIR4oBix7Z7VfXi+hrcsY1wvgIc1lpYri1InTWAi+1PtFwurtoKElcNRW94akWLrQCGzNOKP6OOHTJBPbeF8Bw=="
+                 length="2709291"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.3.3</title>
       <sparkle:version>10</sparkle:version>
       <sparkle:shortVersionString>1.3.3</sparkle:shortVersionString>
