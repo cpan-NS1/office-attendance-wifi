@@ -58,7 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppLogger.shared.log("Status bar item created")
 
         // Apply saved Dock visibility preference
-        if UserDefaults.standard.bool(forKey: "showInDock") {
+        if UserDefaults.standard.bool(forKey: UserDefaults.Keys.showInDock) {
             NSApp.setActivationPolicy(.regular)
         }
 
@@ -222,13 +222,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor [weak self] in self?.coordinator?.start() }
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        if let ref = globalHotKeyRef { UnregisterEventHotKey(ref) }
+        if let handler = hotKeyHandler { RemoveEventHandler(handler) }
+    }
+
     // MARK: - Global hotkey (⌥⌘A)
 
+    private static let hotKeyVirtualKeyCode: UInt32 = 0x00  // kVK_ANSI_A
+    private static let hotKeySignature: OSType = 0x4F414141  // "OAAa"
+
     private func registerGlobalHotKey() {
-        // kVK_ANSI_A = 0x00, modifiers: cmdKey | optionKey
-        let hotKeyID = EventHotKeyID(signature: OSType(0x4F414141), id: 1) // "OAAa"
+        let hotKeyID = EventHotKeyID(signature: Self.hotKeySignature, id: 1)
         var ref: EventHotKeyRef?
-        RegisterEventHotKey(0x00, UInt32(cmdKey | optionKey), hotKeyID,
+        RegisterEventHotKey(Self.hotKeyVirtualKeyCode, UInt32(cmdKey | optionKey), hotKeyID,
                             GetApplicationEventTarget(), 0, &ref)
         globalHotKeyRef = ref
 

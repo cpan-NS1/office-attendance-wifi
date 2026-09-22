@@ -31,6 +31,7 @@
 		C50F451EDBC70C2FACA0F6F6 /* CredentialStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */; };
 		CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C17F111C461DB2D409E8E4 /* SettingsView.swift */; };
 		EB9DE5FD11EAE0FFDC43CCB9 /* MondayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8985095425240345AD2049E5 /* MondayService.swift */; };
+		F01D3C5CD7EAB85211000795 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F01AC37A2F75BA04795B519 /* UserDefaultsKeys.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		8985095425240345AD2049E5 /* MondayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MondayService.swift; sourceTree = "<group>"; };
 		9012880CCBF210D4981178BD /* ColumnMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnMapTests.swift; sourceTree = "<group>"; };
 		96907111BE4919AB6A7AD73F /* CredentialStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStoreTests.swift; sourceTree = "<group>"; };
+		9F01AC37A2F75BA04795B519 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		B08A90B7B82177941DA8BF2E /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		B1BFC4747573FF55C3F554F7 /* NetworkMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitorTests.swift; sourceTree = "<group>"; };
 		BB4DE0096DA7D837A132C374 /* CredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStore.swift; sourceTree = "<group>"; };
@@ -89,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				45CF2ABEAF462E6B0CA8BC68 /* Logger.swift */,
+				9F01AC37A2F75BA04795B519 /* UserDefaultsKeys.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -337,6 +340,7 @@
 				67EA617C5668D6CFEB0B712E /* OfficeAttendanceApp.swift in Sources */,
 				CE431D5B776B539B3106A3D9 /* SettingsView.swift in Sources */,
 				2A456DBF578DF0ECB4F69069 /* SettingsWindowController.swift in Sources */,
+				F01D3C5CD7EAB85211000795 /* UserDefaultsKeys.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

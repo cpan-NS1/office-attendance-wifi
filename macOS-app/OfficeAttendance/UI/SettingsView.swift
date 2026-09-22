@@ -180,7 +180,7 @@ struct SettingsView: View {
                             Toggle("Show in Dock", isOn: $showInDock)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .onChange(of: showInDock) { enabled in
-                                    UserDefaults.standard.set(enabled, forKey: "showInDock")
+                                    UserDefaults.standard.set(enabled, forKey: UserDefaults.Keys.showInDock)
                                     NSApp.setActivationPolicy(enabled ? .regular : .accessory)
                                 }
                             Divider()
@@ -219,7 +219,7 @@ struct SettingsView: View {
         .onAppear {
             loadExisting()
             launchAtLogin = SMAppService.mainApp.status == .enabled
-            showInDock = UserDefaults.standard.bool(forKey: "showInDock")
+            showInDock = UserDefaults.standard.bool(forKey: UserDefaults.Keys.showInDock)
         }
     }
 
