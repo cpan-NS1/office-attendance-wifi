@@ -194,24 +194,35 @@ fi
 current_ip=$(/usr/sbin/ipconfig getifaddr en0 2>/dev/null || true)
 dns_domain=$(scutil --dns 2>/dev/null | /usr/bin/awk '/search domain\[0\]/ { print $NF; exit }')
 
-# If a VPN tunnel is active (utun*/ppp* interface has an IP), we are working
-# remotely — even if DNS search domains appear corporate.
-# Filter for UP interfaces only — dormant system utun (e.g. iCloud Private
-# Relay placeholders) have POINTOPOINT but lack the UP flag.
+# Detect whether a real VPN tunnel is active.
+# macOS always has utun0–utun5 for system services (mDNS, Private Relay, etc.)
+# — all UP+RUNNING+POINTOPOINT but with only IPv6 link-local addresses.
+# A real VPN client (Cisco AnyConnect, etc.) assigns an IPv4 "inet" address to
+# its utun/ppp interface. We look for that combination to avoid false positives.
 vpn_active=0
-if /usr/sbin/ifconfig 2>/dev/null | /usr/bin/grep -E '^(utun|ppp)[0-9]+:' | /usr/bin/grep -qE 'flags=[0-9a-fx]+<[^>]*\bUP\b[^>]*POINTOPOINT'; then
-  vpn_active=1
-fi
+while IFS= read -r iface_block; do
+  if echo "$iface_block" | /usr/bin/grep -qE 'flags=[0-9a-fx]+<[^>]*\bUP\b[^>]*POINTOPOINT' && \
+     echo "$iface_block" | /usr/bin/grep -qE '^\s+inet '; then
+    vpn_active=1
+    break
+  fi
+done < <(/usr/sbin/ifconfig -a 2>/dev/null | /usr/bin/awk '
+  /^(utun|ppp)[0-9]+:/ { if (block) print block; block=$0; next }
+  block { block = block "\n" $0 }
+  END   { if (block) print block }
+')
+
+# Determine whether we are on the office network.
+# Both IP prefix AND DNS domain must match — a single signal is not sufficient.
+# DNS alone is unreliable because VPN tunnels inject the corporate search domain
+# (e.g. ibm.com) even when the machine is on a home network or mobile hotspot.
+ip_match=0
+dns_match=0
+[[ -n "$OFFICE_IP_PREFIX"  && "$current_ip" == ${OFFICE_IP_PREFIX}*   ]] && ip_match=1
+[[ -n "$OFFICE_DNS_DOMAIN" && "$dns_domain" == *"$OFFICE_DNS_DOMAIN"* ]] && dns_match=1
 
 on_office_network=0
-if (( !vpn_active )); then
-  if [[ -n "$OFFICE_IP_PREFIX" && "$current_ip" == ${OFFICE_IP_PREFIX}* ]]; then
-    on_office_network=1
-  fi
-  if [[ -n "$OFFICE_DNS_DOMAIN" && "$dns_domain" == *"$OFFICE_DNS_DOMAIN"* ]]; then
-    on_office_network=1
-  fi
-fi
+(( ip_match && dns_match )) && on_office_network=1
 
 if [[ ${FORCE_RUN:-0} != 1 ]] && (( !on_office_network )); then
   echo "🏢"

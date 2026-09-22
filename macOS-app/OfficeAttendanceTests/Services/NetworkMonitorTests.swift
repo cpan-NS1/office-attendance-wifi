@@ -54,14 +54,21 @@ final class NetworkMonitorTests: XCTestCase {
     }
 }
 
-// MARK: - VPN detection tests
+// MARK: - Office detection logic tests
+//
+// Rule: BOTH IP prefix AND DNS domain must match — regardless of VPN state.
+//
+//  IP match | DNS match | → isOnOffice
+//  ---------+-----------+-------------
+//  yes      | yes       | true
+//  yes      | no        | false
+//  no       | yes       | false  (DNS alone unreliable — VPN injects corp domain)
+//  no       | no        | false
 
-final class NetworkMonitorVPNTests: XCTestCase {
+final class NetworkMonitorOfficeDetectionTests: XCTestCase {
     private var monitor: NetworkMonitor!
     private let creds = CredentialStore.Credentials(
-        token: "",
-        boardId: "",
-        employeeId: "",
+        token: "", boardId: "", employeeId: "",
         ipPrefix: "9.",
         dnsDomain: "ibm.com"
     )
@@ -71,32 +78,35 @@ final class NetworkMonitorVPNTests: XCTestCase {
         monitor = NetworkMonitor()
     }
 
-    // When VPN is active, evaluate() must return false even if IP and DNS both match.
-    func test_evaluate_returnsFalse_whenVPNActive_andIPMatches() {
-        monitor.vpnChecker = { true }
-        let path = NWPathMonitor().currentPath
-        let result = monitor.evaluate(path: path, credentials: creds)
-        XCTAssertFalse(result, "VPN active should short-circuit to false regardless of IP/DNS")
+    // IP + DNS both match → office (the only true-positive case)
+    func test_ipAndDnsMatch_isOffice() {
+        XCTAssertTrue(monitor.isOnOfficeNetwork(
+            ip: "9.1.2.3", dns: "corp.ibm.com", vpnActive: false, credentials: creds))
     }
 
-    func test_evaluate_returnsFalse_whenVPNActive_andDNSMatches() {
-        monitor.vpnChecker = { true }
-        let path = NWPathMonitor().currentPath
-        // DNS matching would normally set isOnOfficeNetwork=true, but VPN overrides it.
-        let officeCredsWithDNS = CredentialStore.Credentials(
-            token: "", boardId: "", employeeId: "",
-            ipPrefix: "",
-            dnsDomain: "ibm.com"
-        )
-        let result = monitor.evaluate(path: path, credentials: officeCredsWithDNS)
-        XCTAssertFalse(result, "VPN active should short-circuit to false even when DNS domain matches")
+    // Same result when VPN is also active (e.g. office WiFi that forces VPN)
+    func test_ipAndDnsMatch_vpnActive_isOffice() {
+        XCTAssertTrue(monitor.isOnOfficeNetwork(
+            ip: "9.1.2.3", dns: "corp.ibm.com", vpnActive: true, credentials: creds))
     }
 
-    // When VPN is NOT active, existing IP/DNS logic still works.
-    func test_evaluate_delegatesToIPAndDNS_whenVPNNotActive() {
-        monitor.vpnChecker = { false }
-        // ipMatches/dnsMatches are already tested; just confirm evaluate() honours them.
-        let result = monitor.ipMatches(ip: "9.1.2.3", prefix: creds.ipPrefix)
-        XCTAssertTrue(result, "IP match should work normally when VPN is not active")
+    // IP matches but DNS doesn't → not office
+    func test_ipMatchOnly_notOffice() {
+        XCTAssertFalse(monitor.isOnOfficeNetwork(
+            ip: "9.1.2.3", dns: "home.net", vpnActive: false, credentials: creds))
+    }
+
+    // DNS matches but IP doesn't → not office
+    // Covers: at home on company VPN (DNS injected, IP is home address)
+    func test_dnsMatchOnly_notOffice() {
+        XCTAssertFalse(monitor.isOnOfficeNetwork(
+            ip: "172.20.10.7", dns: "ibm.com", vpnActive: true, credentials: creds),
+            "VPN-injected DNS without matching IP must not count as office")
+    }
+
+    // Neither matches → not office
+    func test_noMatch_notOffice() {
+        XCTAssertFalse(monitor.isOnOfficeNetwork(
+            ip: "192.168.1.1", dns: "home.net", vpnActive: false, credentials: creds))
     }
 }

@@ -13,25 +13,25 @@ final class NetworkMonitor: ObservableObject {
     var vpnChecker: () -> Bool = { NetworkMonitor.checkVPNActive() }
 
     private var monitor: NWPathMonitor?
+    private var dynamicStore: SCDynamicStore?
     private let queue = DispatchQueue(label: "com.ibm.office-attendance.network")
     private var credentials: CredentialStore.Credentials?
 
     func start(credentials: CredentialStore.Credentials) {
         self.credentials = credentials
+
+        // NWPathMonitor fires on WiFi/interface changes.
         let m = NWPathMonitor()
-        m.pathUpdateHandler = { [weak self] path in
-            guard let self, let creds = self.credentials else { return }
-            let ip = self.currentIPAddress() ?? ""
-            let dns = self.currentDNSDomain() ?? ""
-            let result = self.evaluate(path: path, credentials: creds)
-            DispatchQueue.main.async {
-                self.detectedIP = ip
-                self.detectedDNS = dns
-                self.isOnOfficeNetwork = result
-            }
+        m.pathUpdateHandler = { [weak self] _ in
+            self?.reevaluate()
         }
         m.start(queue: queue)
         monitor = m
+
+        // SCDynamicStore fires on VPN connect/disconnect (and DNS changes),
+        // which NWPathMonitor misses because the underlying en0 path is unchanged.
+        startDynamicStoreMonitor()
+
         // Evaluate synchronously on the caller (main) thread so isOnOfficeNetwork
         // reflects the real value before any subscriber is attached. The IP/DNS
         // reads are fast syscalls and safe to call on the main thread.
@@ -52,13 +52,49 @@ final class NetworkMonitor: ObservableObject {
 
     // MARK: - Private helpers
 
+    private func reevaluate() {
+        guard let creds = credentials else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.evaluateAndPublishCurrentNetwork(credentials: creds)
+        }
+    }
+
+    /// Watches DNS and interface-list changes via SCDynamicStore so that VPN
+    /// connect/disconnect events (which NWPathMonitor does not surface) trigger
+    /// a re-evaluation.
+    private func startDynamicStoreMonitor() {
+        let keys = [
+            "State:/Network/Global/DNS",
+            "State:/Network/Interface",
+        ] as CFArray
+
+        var ctx = SCDynamicStoreContext(
+            version: 0,
+            info: Unmanaged.passUnretained(self).toOpaque(),
+            retain: nil, release: nil, copyDescription: nil
+        )
+
+        guard let store = SCDynamicStoreCreate(
+            nil, "OfficeAttendance.VPNWatch" as CFString,
+            { _, _, info in
+                guard let info else { return }
+                let monitor = Unmanaged<NetworkMonitor>.fromOpaque(info).takeUnretainedValue()
+                monitor.reevaluate()
+            },
+            &ctx
+        ) else { return }
+
+        SCDynamicStoreSetNotificationKeys(store, keys, nil)
+        let source = SCDynamicStoreCreateRunLoopSource(nil, store, 0)
+        CFRunLoopAddSource(CFRunLoopGetMain(), source, .defaultMode)
+        dynamicStore = store
+    }
+
     private func evaluateAndPublishCurrentNetwork(credentials: CredentialStore.Credentials) {
         let ip = currentIPAddress() ?? ""
         let dns = currentDNSDomain() ?? ""
         let vpn = vpnChecker()
-        let result = !vpn
-                  && (ipMatches(ip: ip, prefix: credentials.ipPrefix)
-                   || dnsMatches(domain: dns, suffix: credentials.dnsDomain))
+        let result = isOnOfficeNetwork(ip: ip, dns: dns, vpnActive: vpn, credentials: credentials)
         detectedIP = ip
         detectedDNS = dns
         isVPNActive = vpn
@@ -68,16 +104,30 @@ final class NetworkMonitor: ObservableObject {
     func stop() {
         monitor?.cancel()
         monitor = nil
+        dynamicStore = nil   // source is removed when the store is deallocated
     }
 
     // MARK: - Testable helpers
 
     func evaluate(path: NWPath, credentials: CredentialStore.Credentials) -> Bool {
-        guard !vpnChecker() else { return false }
         let ip = currentIPAddress() ?? ""
         let dns = currentDNSDomain() ?? ""
+        return isOnOfficeNetwork(ip: ip, dns: dns, vpnActive: vpnChecker(), credentials: credentials)
+    }
+
+    /// Core office-network decision, fully testable without live syscalls.
+    ///
+    /// Rule: BOTH IP prefix AND DNS domain must match to be considered on the
+    /// office network — regardless of VPN state.
+    ///
+    /// A single signal is not sufficient because:
+    /// - IP alone: a home router or mobile hotspot could fall in a matching range.
+    /// - DNS alone: VPN tunnels inject the corporate search domain (e.g. ibm.com)
+    ///   even when the physical network is a home broadband or mobile hotspot.
+    func isOnOfficeNetwork(ip: String, dns: String, vpnActive: Bool,
+                           credentials: CredentialStore.Credentials) -> Bool {
         return ipMatches(ip: ip, prefix: credentials.ipPrefix)
-            || dnsMatches(domain: dns, suffix: credentials.dnsDomain)
+            && dnsMatches(domain: dns, suffix: credentials.dnsDomain)
     }
 
     /// Requires the prefix to end with "." so that "9." matches "9.x.x.x"
@@ -92,11 +142,14 @@ final class NetworkMonitor: ObservableObject {
         !domain.isEmpty && !suffix.isEmpty && domain.contains(suffix)
     }
 
-    /// Returns true when a point-to-point VPN tunnel (utun* or ppp*) is active.
-    /// When on VPN from home the corporate DNS search domain leaks through the
-    /// tunnel, which would otherwise cause a false-positive office detection.
-    /// Made `static` so it can be referenced in the default `vpnChecker` closure
-    /// without capturing `self`, and so tests can call it directly.
+    /// Returns true when a real VPN tunnel (utun* or ppp*) carrying an IPv4
+    /// address is active.
+    ///
+    /// macOS always has several utun interfaces (utun0–utun5) for system services
+    /// like mDNS, Wireguard, and Private Relay — all UP+RUNNING+POINTOPOINT but
+    /// with only IPv6 link-local addresses. A VPN client (Cisco AnyConnect, etc.)
+    /// assigns an IPv4 address to its tunnel. Requiring AF_INET ensures we only
+    /// match real VPN tunnels, not the always-present system ones.
     static func checkVPNActive() -> Bool {
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&ifaddr) == 0 else { return false }
@@ -106,14 +159,14 @@ final class NetworkMonitor: ObservableObject {
             let ifa = current.pointee
             let name = String(cString: ifa.ifa_name)
             let flags = Int32(ifa.ifa_flags)
-            // Require UP + RUNNING so dormant system utun interfaces (e.g. iCloud
-            // Private Relay placeholders) don't trigger a false VPN detection.
             let isUp = (flags & (IFF_UP | IFF_RUNNING)) == (IFF_UP | IFF_RUNNING)
             let isPointToPoint = (flags & IFF_POINTOPOINT) != 0
             let isTunnel = name.hasPrefix("utun") || name.hasPrefix("ppp")
-            // Also require a non-nil address so unassigned tunnel slots are skipped.
-            let hasAddr = ifa.ifa_addr != nil
-            if isTunnel && isPointToPoint && isUp && hasAddr {
+            // Only count interfaces that carry an IPv4 address — system utun
+            // interfaces only have IPv6 link-local addresses and must be excluded.
+            let hasIPv4 = ifa.ifa_addr != nil
+                       && ifa.ifa_addr.pointee.sa_family == UInt8(AF_INET)
+            if isTunnel && isPointToPoint && isUp && hasIPv4 {
                 return true
             }
             addr = current.pointee.ifa_next
