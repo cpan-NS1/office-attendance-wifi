@@ -3,6 +3,19 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.4.0</title>
+      <sparkle:version>12</sparkle:version>
+      <sparkle:shortVersionString>1.4.0</sparkle:shortVersionString>
+      <pubDate>Tue, 22 Sep 2026 14:34:30 +0000</pubDate>
+      <description><![CDATA[
+<h2>What's New in 1.4.0</h2><ul><li><b>Feature:</b> Global hotkey ⌥⌘A opens the menu bar dropdown even when the icon is hidden</li><li><b>Feature:</b> Show in Dock toggle — use the app as a regular Dock app if preferred</li><li><b>Settings:</b> Start at Login checkbox added to Settings</li><li><b>Feature:</b> Buy Me a Coffee link in the dropdown menu</li><li><b>Fix:</b> Clicking the Dock icon now opens the dropdown menu</li><li><b>Fix:</b> ⌥⌘A correctly opens the dropdown instead of the Settings window</li><li><b>Stability:</b> Carbon hotkey handlers unregistered cleanly on quit</li><li><b>Fix:</b> Office detection suppressed when VPN is active</li><li><b>Fix:</b> Require both IP prefix and DNS domain to match for office detection</li><li><b>Fix:</b> Exclude loopback and APIPA addresses from VPN detection</li></ul>
+      ]]></description>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.4.0/OfficeAttendance-1.4.0.dmg"
+                 sparkle:edSignature="Qb13h8YYAMTZt3gNCiukHt7FK+sr3yjKyL/saxnv8292ZQTUFEi10f5K0WevjGnEcys5xFx0T/ybR+Zg3hBzBA=="
+                 length="2718338"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.3.4</title>
       <sparkle:version>11</sparkle:version>
       <sparkle:shortVersionString>1.3.4</sparkle:shortVersionString>
