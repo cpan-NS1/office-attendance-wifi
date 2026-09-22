@@ -222,6 +222,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor [weak self] in self?.coordinator?.start() }
     }
 
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        statusItem?.button?.performClick(nil)
+        return false
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         if let ref = globalHotKeyRef { UnregisterEventHotKey(ref) }
         if let handler = hotKeyHandler { RemoveEventHandler(handler) }
