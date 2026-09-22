@@ -41,6 +41,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        // Only hide from Dock if the user hasn't opted to keep it visible.
+        if !UserDefaults.standard.bool(forKey: "showInDock") {
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
 }

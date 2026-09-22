@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import Combine
 import Sparkle
+import Carbon
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
@@ -16,6 +17,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updaterDelegate: nil,
         userDriverDelegate: nil
     )
+    private var globalHotKeyRef: EventHotKeyRef?
+    private var hotKeyHandler: EventHandlerRef?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppLogger.shared.log("App launched (v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"))")
@@ -53,6 +56,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem?.button?.title = "🏢?"
         statusItem?.menu = buildMenu()
         AppLogger.shared.log("Status bar item created")
+
+        // Apply saved Dock visibility preference
+        if UserDefaults.standard.bool(forKey: "showInDock") {
+            NSApp.setActivationPolicy(.regular)
+        }
+
+        // Register ⌥⌘A global hotkey as a fallback when the menu bar icon is hidden
+        registerGlobalHotKey()
 
         // Show settings on first launch if not configured
         if credentialStore.load() == nil {
@@ -209,5 +220,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func restartCoordinator() {
         Task { @MainActor [weak self] in self?.coordinator?.start() }
+    }
+
+    // MARK: - Global hotkey (⌥⌘A)
+
+    private func registerGlobalHotKey() {
+        // kVK_ANSI_A = 0x00, modifiers: cmdKey | optionKey
+        let hotKeyID = EventHotKeyID(signature: OSType(0x4F414141), id: 1) // "OAAa"
+        var ref: EventHotKeyRef?
+        RegisterEventHotKey(0x00, UInt32(cmdKey | optionKey), hotKeyID,
+                            GetApplicationEventTarget(), 0, &ref)
+        globalHotKeyRef = ref
+
+        var eventSpec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard),
+                                      eventKind: UInt32(kEventHotKeyPressed))
+        let selfPtr = Unmanaged.passUnretained(self).toOpaque()
+        InstallEventHandler(GetApplicationEventTarget(), { _, _, userData -> OSStatus in
+            guard let userData else { return OSStatus(eventNotHandledErr) }
+            let delegate = Unmanaged<AppDelegate>.fromOpaque(userData).takeUnretainedValue()
+            DispatchQueue.main.async { delegate.settingsWindowController?.show() }
+            return noErr
+        }, 1, &eventSpec, selfPtr, &hotKeyHandler)
     }
 }

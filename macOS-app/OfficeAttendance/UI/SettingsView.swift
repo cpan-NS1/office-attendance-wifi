@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var showAdvanced = false
     @State private var columnMap: ColumnMap? = nil
     @State private var launchAtLogin = false
+    @State private var showInDock = false
 
     // Advanced manual overrides
     @State private var manualEmployeeCol = ""
@@ -161,20 +162,36 @@ struct SettingsView: View {
 
                     // MARK: General
                     GroupBox("General") {
-                        Toggle("Start at login", isOn: $launchAtLogin)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .onChange(of: launchAtLogin) { enabled in
-                                do {
-                                    if enabled {
-                                        try SMAppService.mainApp.register()
-                                    } else {
-                                        try SMAppService.mainApp.unregister()
+                        VStack(alignment: .leading, spacing: 8) {
+                            Toggle("Start at login", isOn: $launchAtLogin)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .onChange(of: launchAtLogin) { enabled in
+                                    do {
+                                        if enabled {
+                                            try SMAppService.mainApp.register()
+                                        } else {
+                                            try SMAppService.mainApp.unregister()
+                                        }
+                                    } catch {
+                                        // Revert toggle if registration fails
+                                        launchAtLogin = !enabled
                                     }
-                                } catch {
-                                    // Revert toggle if registration fails
-                                    launchAtLogin = !enabled
                                 }
+                            Toggle("Show in Dock", isOn: $showInDock)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .onChange(of: showInDock) { enabled in
+                                    UserDefaults.standard.set(enabled, forKey: "showInDock")
+                                    NSApp.setActivationPolicy(enabled ? .regular : .accessory)
+                                }
+                            Divider()
+                            HStack(spacing: 4) {
+                                Image(systemName: "keyboard")
+                                    .foregroundColor(.secondary)
+                                Text("Press ⌥⌘A anytime to open Settings if the menu bar icon is hidden.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
+                        }
                         .padding(.vertical, 4)
                     }
             }
@@ -202,6 +219,7 @@ struct SettingsView: View {
         .onAppear {
             loadExisting()
             launchAtLogin = SMAppService.mainApp.status == .enabled
+            showInDock = UserDefaults.standard.bool(forKey: "showInDock")
         }
     }
 
