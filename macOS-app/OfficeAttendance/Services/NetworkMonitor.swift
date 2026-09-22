@@ -117,15 +117,17 @@ final class NetworkMonitor: ObservableObject {
 
     /// Core office-network decision, fully testable without live syscalls.
     ///
-    /// Rule: BOTH IP prefix AND DNS domain must match to be considered on the
-    /// office network — regardless of VPN state.
+    /// Rule: BOTH IP prefix AND DNS domain must match, AND no VPN must be active.
     ///
     /// A single signal is not sufficient because:
     /// - IP alone: a home router or mobile hotspot could fall in a matching range.
     /// - DNS alone: VPN tunnels inject the corporate search domain (e.g. ibm.com)
     ///   even when the physical network is a home broadband or mobile hotspot.
+    /// - VPN active: suppress entirely — the machine is logically remote even if
+    ///   the IP/DNS happen to match (e.g. split-tunnel from home on corp subnet).
     func isOnOfficeNetwork(ip: String, dns: String, vpnActive: Bool,
                            credentials: CredentialStore.Credentials) -> Bool {
+        guard !vpnActive else { return false }
         return ipMatches(ip: ip, prefix: credentials.ipPrefix)
             && dnsMatches(domain: dns, suffix: credentials.dnsDomain)
     }
@@ -142,14 +144,18 @@ final class NetworkMonitor: ObservableObject {
         !domain.isEmpty && !suffix.isEmpty && domain.contains(suffix)
     }
 
-    /// Returns true when a real VPN tunnel (utun* or ppp*) carrying an IPv4
-    /// address is active.
+    /// Returns true when a real VPN tunnel (utun* or ppp*) carrying a routable
+    /// IPv4 address is active.
     ///
     /// macOS always has several utun interfaces (utun0–utun5) for system services
     /// like mDNS, Wireguard, and Private Relay — all UP+RUNNING+POINTOPOINT but
     /// with only IPv6 link-local addresses. A VPN client (Cisco AnyConnect, etc.)
     /// assigns an IPv4 address to its tunnel. Requiring AF_INET ensures we only
     /// match real VPN tunnels, not the always-present system ones.
+    ///
+    /// Loopback (127.x.x.x) and APIPA (169.254.x.x) addresses are excluded —
+    /// local proxies, VMs, and some system daemons may bind a utun interface to
+    /// those ranges, which must not be treated as an active VPN.
     static func checkVPNActive() -> Bool {
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&ifaddr) == 0 else { return false }
@@ -162,11 +168,20 @@ final class NetworkMonitor: ObservableObject {
             let isUp = (flags & (IFF_UP | IFF_RUNNING)) == (IFF_UP | IFF_RUNNING)
             let isPointToPoint = (flags & IFF_POINTOPOINT) != 0
             let isTunnel = name.hasPrefix("utun") || name.hasPrefix("ppp")
-            // Only count interfaces that carry an IPv4 address — system utun
-            // interfaces only have IPv6 link-local addresses and must be excluded.
-            let hasIPv4 = ifa.ifa_addr != nil
-                       && ifa.ifa_addr.pointee.sa_family == UInt8(AF_INET)
-            if isTunnel && isPointToPoint && isUp && hasIPv4 {
+            // Only count interfaces that carry a routable IPv4 address — system
+            // utun interfaces only have IPv6 link-local addresses and must be
+            // excluded, as must loopback and APIPA ranges.
+            let hasRoutableIPv4: Bool = {
+                guard ifa.ifa_addr != nil,
+                      ifa.ifa_addr.pointee.sa_family == UInt8(AF_INET) else { return false }
+                var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                getnameinfo(ifa.ifa_addr, socklen_t(ifa.ifa_addr.pointee.sa_len),
+                            &hostname, socklen_t(hostname.count),
+                            nil, 0, NI_NUMERICHOST)
+                let ip = String(cString: hostname)
+                return !ip.hasPrefix("127.") && !ip.hasPrefix("169.254.")
+            }()
+            if isTunnel && isPointToPoint && isUp && hasRoutableIPv4 {
                 return true
             }
             addr = current.pointee.ifa_next

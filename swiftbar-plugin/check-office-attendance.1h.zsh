@@ -202,7 +202,8 @@ dns_domain=$(scutil --dns 2>/dev/null | /usr/bin/awk '/search domain\[0\]/ { pri
 vpn_active=0
 while IFS= read -r iface_block; do
   if echo "$iface_block" | /usr/bin/grep -qE 'flags=[0-9a-fx]+<[^>]*\bUP\b[^>]*POINTOPOINT' && \
-     echo "$iface_block" | /usr/bin/grep -qE '^\s+inet '; then
+     echo "$iface_block" | /usr/bin/grep -qE '^\s+inet ' && \
+     ! echo "$iface_block" | /usr/bin/grep -qE '^\s+inet (127\.|169\.254\.)'; then
     vpn_active=1
     break
   fi
@@ -218,11 +219,11 @@ done < <(/usr/sbin/ifconfig -a 2>/dev/null | /usr/bin/awk '
 # (e.g. ibm.com) even when the machine is on a home network or mobile hotspot.
 ip_match=0
 dns_match=0
-[[ -n "$OFFICE_IP_PREFIX"  && "$current_ip" == ${OFFICE_IP_PREFIX}*   ]] && ip_match=1
+[[ -n "$OFFICE_IP_PREFIX"  && "$current_ip" == "${OFFICE_IP_PREFIX}"*   ]] && ip_match=1
 [[ -n "$OFFICE_DNS_DOMAIN" && "$dns_domain" == *"$OFFICE_DNS_DOMAIN"* ]] && dns_match=1
 
 on_office_network=0
-(( ip_match && dns_match )) && on_office_network=1
+(( !vpn_active && ip_match && dns_match )) && on_office_network=1
 
 if [[ ${FORCE_RUN:-0} != 1 ]] && (( !on_office_network )); then
   echo "🏢"

@@ -56,14 +56,15 @@ final class NetworkMonitorTests: XCTestCase {
 
 // MARK: - Office detection logic tests
 //
-// Rule: BOTH IP prefix AND DNS domain must match — regardless of VPN state.
+// Rule: BOTH IP prefix AND DNS domain must match AND VPN must be inactive.
 //
-//  IP match | DNS match | → isOnOffice
-//  ---------+-----------+-------------
-//  yes      | yes       | true
-//  yes      | no        | false
-//  no       | yes       | false  (DNS alone unreliable — VPN injects corp domain)
-//  no       | no        | false
+//  IP match | DNS match | VPN active | → isOnOffice
+//  ---------+-----------+------------+-------------
+//  yes      | yes       | no         | true
+//  yes      | yes       | yes        | false  (VPN active suppresses detection)
+//  yes      | no        | no         | false
+//  no       | yes       | no         | false  (DNS alone unreliable — VPN injects corp domain)
+//  no       | no        | no         | false
 
 final class NetworkMonitorOfficeDetectionTests: XCTestCase {
     private var monitor: NetworkMonitor!
@@ -84,9 +85,9 @@ final class NetworkMonitorOfficeDetectionTests: XCTestCase {
             ip: "9.1.2.3", dns: "corp.ibm.com", vpnActive: false, credentials: creds))
     }
 
-    // Same result when VPN is also active (e.g. office WiFi that forces VPN)
-    func test_ipAndDnsMatch_vpnActive_isOffice() {
-        XCTAssertTrue(monitor.isOnOfficeNetwork(
+    // VPN active suppresses office detection even when IP + DNS both match.
+    func test_ipAndDnsMatch_vpnActive_notOffice() {
+        XCTAssertFalse(monitor.isOnOfficeNetwork(
             ip: "9.1.2.3", dns: "corp.ibm.com", vpnActive: true, credentials: creds))
     }
 
