@@ -245,7 +245,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         InstallEventHandler(GetApplicationEventTarget(), { _, _, userData -> OSStatus in
             guard let userData else { return OSStatus(eventNotHandledErr) }
             let delegate = Unmanaged<AppDelegate>.fromOpaque(userData).takeUnretainedValue()
-            DispatchQueue.main.async { delegate.settingsWindowController?.show() }
+            DispatchQueue.main.async { delegate.statusItem?.button?.performClick(nil) }
             return noErr
         }, 1, &eventSpec, selfPtr, &hotKeyHandler)
     }

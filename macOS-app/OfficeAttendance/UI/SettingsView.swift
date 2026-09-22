@@ -187,7 +187,7 @@ struct SettingsView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "keyboard")
                                     .foregroundColor(.secondary)
-                                Text("Press ⌥⌘A anytime to open Settings if the menu bar icon is hidden.")
+                                Text("Press ⌥⌘A anytime to open the menu if the menu bar icon is hidden.")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
