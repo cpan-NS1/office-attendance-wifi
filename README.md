@@ -1,5 +1,7 @@
 # Office Attendance
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-chenmo-yellow?logo=buy-me-a-coffee)](https://buymeacoffee.com/chenmo)
+
 Two independent implementations of the same idea — automatically log your daily attendance on Monday.com based on whether you are on the IBM office network.
 
 | Folder | Approach | What you need |
@@ -92,3 +94,11 @@ rm ~/Library/Application\ Support/SwiftBar/Plugins/check-office-attendance.1h.zs
 ```
 
 Then remove this repo folder if you no longer need it.
+
+---
+
+## Support
+
+If this project saves you a few minutes every day, consider buying me a coffee! ☕
+
+[https://buymeacoffee.com/chenmo](https://buymeacoffee.com/chenmo)
