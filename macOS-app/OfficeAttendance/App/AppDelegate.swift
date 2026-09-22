@@ -223,6 +223,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if hasVisibleWindows { return true }  // let AppKit raise the existing window
         statusItem?.button?.performClick(nil)
         return false
     }
