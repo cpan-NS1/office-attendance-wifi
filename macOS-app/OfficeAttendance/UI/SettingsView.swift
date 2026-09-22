@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 
 struct SettingsView: View {
     @ObservedObject var credentialStore: CredentialStore
@@ -14,6 +15,7 @@ struct SettingsView: View {
     @State private var verifyStatus: VerifyStatus = .idle
     @State private var showAdvanced = false
     @State private var columnMap: ColumnMap? = nil
+    @State private var launchAtLogin = false
 
     // Advanced manual overrides
     @State private var manualEmployeeCol = ""
@@ -156,6 +158,25 @@ struct SettingsView: View {
                         }
                         .padding(.vertical, 4)
                     }
+
+                    // MARK: General
+                    GroupBox("General") {
+                        Toggle("Start at login", isOn: $launchAtLogin)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .onChange(of: launchAtLogin) { enabled in
+                                do {
+                                    if enabled {
+                                        try SMAppService.mainApp.register()
+                                    } else {
+                                        try SMAppService.mainApp.unregister()
+                                    }
+                                } catch {
+                                    // Revert toggle if registration fails
+                                    launchAtLogin = !enabled
+                                }
+                            }
+                        .padding(.vertical, 4)
+                    }
             }
             .padding(20)
 
@@ -178,7 +199,10 @@ struct SettingsView: View {
         }
         .frame(width: 480)
         .fixedSize(horizontal: false, vertical: true)
-        .onAppear { loadExisting() }
+        .onAppear {
+            loadExisting()
+            launchAtLogin = SMAppService.mainApp.status == .enabled
+        }
     }
 
     // MARK: - Actions
