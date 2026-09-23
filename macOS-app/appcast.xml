@@ -3,6 +3,19 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.4.1</title>
+      <sparkle:version>13</sparkle:version>
+      <sparkle:shortVersionString>1.4.1</sparkle:shortVersionString>
+      <pubDate>Wed, 23 Sep 2026 12:22:08 +0000</pubDate>
+      <description><![CDATA[
+<h2>What's New in 1.4.1</h2><ul><li><b>Fix:</b> New users no longer see "No attendance row found for this week" — the app now scans all board pages, not just the first 500 rows</li></ul>
+      ]]></description>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.4.1/OfficeAttendance-1.4.1.dmg"
+                 sparkle:edSignature="envvSapCSwT/AKN+jPpWHSm8M/RGBHcRhilIaV7YxMqYSP6pfUbULjY/ieannZBNai9rV5e4bK5msDcmroYxAQ=="
+                 length="2732996"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.4.0</title>
       <sparkle:version>12</sparkle:version>
       <sparkle:shortVersionString>1.4.0</sparkle:shortVersionString>
