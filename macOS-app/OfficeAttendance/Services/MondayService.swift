@@ -305,6 +305,7 @@ final class MondayService {
     func weekStartDate(for date: Date) -> Date {
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 2 // Monday
+        calendar.timeZone = TimeZone(identifier: "UTC")!
         let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
         return calendar.date(from: components)!
     }
@@ -313,6 +314,7 @@ final class MondayService {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "UTC")
         return formatter.string(from: weekStartDate(for: date))
     }
 
