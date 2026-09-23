@@ -192,3 +192,178 @@ final class MondayServiceRetryTests: XCTestCase {
         }
     }
 }
+
+// MARK: - Pagination tests
+
+/// Verifies that findItemId walks all pages via cursor-based pagination so that
+/// a new user whose row sits beyond the first 500 items is found correctly.
+///
+/// Tests exercise findItemId indirectly through checkIn (the only caller that
+/// takes a fully-controllable path). Each test uses SequencedURLProtocol to
+/// inject exact HTTP responses for every API call checkIn makes.
+final class MondayServicePaginationTests: XCTestCase {
+
+    // MARK: - Shared fixtures
+
+    private let columnMap = ColumnMap(
+        employeeColumnId:   "emp_col",
+        weekStartColumnId:  "week_col",
+        mondayColumnId:     "mon_col",
+        tuesdayColumnId:    "tue_col",
+        wednesdayColumnId:  "wed_col",
+        thursdayColumnId:   "thu_col",
+        fridayColumnId:     "fri_col"
+    )
+
+    private let credentials = CredentialStore.Credentials(
+        token: "test-token",
+        boardId: "board-1",
+        employeeId: "1058851",
+        ipPrefix: "",
+        dnsDomain: ""
+    )
+
+    /// Builds an items_page JSON response.
+    /// - Parameters:
+    ///   - items: Array of item dictionaries to include.
+    ///   - cursor: If non-nil, included as the pagination cursor (more pages available).
+    private func itemsPageJSON(items: [[String: Any]], cursor: String?) -> Data {
+        var page: [String: Any] = ["items": items]
+        if let cursor { page["cursor"] = cursor }
+        let payload: [String: Any] = [
+            "data": ["boards": [["items_page": page]]]
+        ]
+        return try! JSONSerialization.data(withJSONObject: payload)
+    }
+
+    /// Builds a next_items_page JSON response.
+    private func nextItemsPageJSON(items: [[String: Any]], cursor: String?) -> Data {
+        var page: [String: Any] = ["items": items]
+        if let cursor { page["cursor"] = cursor }
+        let payload: [String: Any] = [
+            "data": ["next_items_page": page]
+        ]
+        return try! JSONSerialization.data(withJSONObject: payload)
+    }
+
+    /// Builds a minimal mutation success response.
+    private var mutationSuccessJSON: Data {
+        let payload: [String: Any] = [
+            "data": ["change_simple_column_value": ["id": "item-99"]]
+        ]
+        return try! JSONSerialization.data(withJSONObject: payload)
+    }
+
+    /// The ISO week-start string for the current week (matches what checkIn computes internally).
+    private var currentWeekStart: String {
+        MondayService().weekStartDateString(for: Date())
+    }
+
+    /// Builds a board item whose employee and week-start columns match the test credentials/date.
+    private func matchingItem(id: String = "item-99") -> [String: Any] {
+        let ws = currentWeekStart
+        return [
+            "id": id,
+            "column_values": [
+                ["id": "emp_col",  "text": "1058851", "value": "\"1058851\""],
+                ["id": "week_col", "text": ws, "value": "{\"date\":\"\(ws)\"}"]
+            ]
+        ]
+    }
+
+    /// Builds a board item that does NOT match (different employee).
+    private func nonMatchingItem(id: String) -> [String: Any] {
+        let ws = currentWeekStart
+        return [
+            "id": id,
+            "column_values": [
+                ["id": "emp_col",  "text": "0000001", "value": "\"0000001\""],
+                ["id": "week_col", "text": ws, "value": "{\"date\":\"\(ws)\"}"]
+            ]
+        ]
+    }
+
+    override func setUp() {
+        super.setUp()
+        SequencedURLProtocol.responses = []
+    }
+
+    // MARK: - Tests
+
+    /// Match found on page 1: cursor is present but should never be followed.
+    /// Expected network calls: 1 (items_page) + 1 (mutation) = 2 total.
+    func test_findItemId_matchOnFirstPage_doesNotFetchSecondPage() async throws {
+        // Page 1 contains the matching item; cursor signals more pages exist
+        // but should never be consumed.
+        let page1 = itemsPageJSON(items: [matchingItem()], cursor: "cursor-abc")
+        SequencedURLProtocol.responses = [
+            .success(page1),
+            .success(mutationSuccessJSON),
+        ]
+
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        let cal = Calendar(identifier: .gregorian)
+        let weekday = cal.component(.weekday, from: Date())
+        try XCTSkipIf(weekday == 1 || weekday == 7, "Skipped: test requires a weekday")
+
+        try await service.checkIn(status: .office, credentials: credentials, columnMap: columnMap)
+
+        XCTAssertTrue(SequencedURLProtocol.responses.isEmpty,
+                      "Both responses should be consumed (1 items_page + 1 mutation)")
+    }
+
+    /// Match found on page 2: first page has no match + cursor, second page has the match.
+    /// Expected network calls: 1 (items_page) + 1 (next_items_page) + 1 (mutation) = 3 total.
+    func test_findItemId_matchOnSecondPage_consumesCursor() async throws {
+        let cal = Calendar(identifier: .gregorian)
+        let weekday = cal.component(.weekday, from: Date())
+        try XCTSkipIf(weekday == 1 || weekday == 7, "Skipped: test requires a weekday")
+
+        let page1 = itemsPageJSON(items: [nonMatchingItem(id: "item-01")], cursor: "cursor-page2")
+        let page2 = nextItemsPageJSON(items: [matchingItem()], cursor: nil)
+
+        SequencedURLProtocol.responses = [
+            .success(page1),
+            .success(page2),
+            .success(mutationSuccessJSON),
+        ]
+
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        try await service.checkIn(status: .office, credentials: credentials, columnMap: columnMap)
+
+        XCTAssertTrue(SequencedURLProtocol.responses.isEmpty,
+                      "All 3 responses should be consumed (items_page + next_items_page + mutation)")
+    }
+
+    /// All pages exhausted with no match → .noRowFound thrown (mutation never called).
+    /// Expected network calls: 1 (items_page) + 1 (next_items_page) = 2 total.
+    func test_findItemId_noMatchOnAnyPage_throwsNoRowFound() async throws {
+        let cal = Calendar(identifier: .gregorian)
+        let weekday = cal.component(.weekday, from: Date())
+        try XCTSkipIf(weekday == 1 || weekday == 7, "Skipped: test requires a weekday")
+
+        let page1 = itemsPageJSON(items: [nonMatchingItem(id: "item-01")], cursor: "cursor-page2")
+        let page2 = nextItemsPageJSON(items: [nonMatchingItem(id: "item-02")], cursor: nil)
+
+        SequencedURLProtocol.responses = [
+            .success(page1),
+            .success(page2),
+        ]
+
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        do {
+            try await service.checkIn(status: .office, credentials: credentials, columnMap: columnMap)
+            XCTFail("Expected MondayError.noRowFound to be thrown")
+        } catch MondayError.noRowFound {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertTrue(SequencedURLProtocol.responses.isEmpty,
+                      "Both page responses should be consumed before throwing")
+    }
+}

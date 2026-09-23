@@ -216,10 +216,11 @@ final class MondayService {
     private func findItemId(boardId: String, employeeId: String,
                             weekStartDate: String, columnMap: ColumnMap,
                             token: String) async throws -> String {
-        let query = """
+        let firstPageQuery = """
         query($boardId: ID!) {
           boards(ids: [$boardId]) {
             items_page(limit: 500) {
+              cursor
               items {
                 id
                 column_values(ids: ["\(columnMap.employeeColumnId)", "\(columnMap.weekStartColumnId)"]) {
@@ -230,31 +231,74 @@ final class MondayService {
           }
         }
         """
-        let payload = try buildPayload(query: query, variables: ["boardId": boardId])
-        let data = try await post(payload: payload, token: token)
-        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        let errors = (json?["errors"] as? [[String: Any]]) ?? []
-        if !errors.isEmpty {
-            throw MondayError.apiError(errors.first?["message"] as? String ?? "unknown")
+        let nextPageQuery = """
+        query($cursor: String!) {
+          next_items_page(limit: 500, cursor: $cursor) {
+            cursor
+            items {
+              id
+              column_values(ids: ["\(columnMap.employeeColumnId)", "\(columnMap.weekStartColumnId)"]) {
+                id text value
+              }
+            }
+          }
         }
-        guard let items = ((((json?["data"] as? [String: Any])?["boards"] as? [[String: Any]])?.first)?["items_page"] as? [String: Any])?["items"] as? [[String: Any]]
-        else { throw MondayError.apiError("Unexpected response shape") }
+        """
 
-        for item in items {
-            guard let id = item["id"] as? String,
-                  let colVals = item["column_values"] as? [[String: Any]] else { continue }
-
+        let decoder = JSONDecoder()
+        func matchesTarget(_ item: [String: Any]) -> Bool {
+            guard let colVals = item["column_values"] as? [[String: Any]] else { return false }
             let empMatch = colVals.contains {
                 $0["id"] as? String == columnMap.employeeColumnId &&
-                $0["text"] as? String == employeeId
+                ($0["text"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) == employeeId
             }
             let weekMatch = colVals.contains {
                 $0["id"] as? String == columnMap.weekStartColumnId &&
-                (try? (JSONDecoder().decode([String: String].self,
-                    from: Data(($0["value"] as? String ?? "").utf8)))["date"]) == weekStartDate
+                (try? decoder.decode([String: String].self,
+                    from: Data(($0["value"] as? String ?? "").utf8)))?["date"] == weekStartDate
             }
-            if empMatch && weekMatch { return id }
+            return empMatch && weekMatch
         }
+
+        // First page
+        let firstPayload = try buildPayload(query: firstPageQuery, variables: ["boardId": boardId])
+        let firstData = try await post(payload: firstPayload, token: token)
+        let firstJson = try JSONSerialization.jsonObject(with: firstData) as? [String: Any]
+        let firstErrors = (firstJson?["errors"] as? [[String: Any]]) ?? []
+        if !firstErrors.isEmpty {
+            throw MondayError.apiError(firstErrors.first?["message"] as? String ?? "unknown")
+        }
+        guard let firstPage = ((((firstJson?["data"] as? [String: Any])?["boards"] as? [[String: Any]])?.first)?["items_page"] as? [String: Any])
+        else { throw MondayError.apiError("Unexpected response shape") }
+
+        let firstItems = firstPage["items"] as? [[String: Any]] ?? []
+        if let match = firstItems.first(where: matchesTarget),
+           let id = match["id"] as? String { return id }
+
+        // Subsequent pages via cursor
+        var cursor = firstPage["cursor"] as? String
+        var pageCount = 0
+        let maxPages = 200 // 200 × 500 = 100 000 items; well above any real board
+        while let activeCursor = cursor {
+            pageCount += 1
+            if pageCount > maxPages { throw MondayError.apiError("Pagination limit exceeded") }
+            let payload = try buildPayload(query: nextPageQuery, variables: ["cursor": activeCursor])
+            let data = try await post(payload: payload, token: token)
+            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+            let errors = (json?["errors"] as? [[String: Any]]) ?? []
+            if !errors.isEmpty {
+                throw MondayError.apiError(errors.first?["message"] as? String ?? "unknown")
+            }
+            guard let page = (json?["data"] as? [String: Any])?["next_items_page"] as? [String: Any]
+            else { throw MondayError.apiError("Unexpected response shape") }
+
+            let items = page["items"] as? [[String: Any]] ?? []
+            if let match = items.first(where: matchesTarget),
+               let id = match["id"] as? String { return id }
+
+            cursor = page["cursor"] as? String
+        }
+
         throw MondayError.noRowFound
     }
 
