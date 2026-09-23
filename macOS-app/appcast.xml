@@ -3,6 +3,19 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.4.4</title>
+      <sparkle:version>16</sparkle:version>
+      <sparkle:shortVersionString>1.4.4</sparkle:shortVersionString>
+      <pubDate>Wed, 23 Sep 2026 22:33:23 +0000</pubDate>
+      <description><![CDATA[
+<h2>What's New in v1.4.4</h2><ul><li><b>Fix:</b> Settings window now appears on screen immediately when opened from the menu bar</li><li><b>Settings:</b> Auto-fetches your Board ID and Employee ID — no manual lookup needed</li><li><b>History:</b> Calendar loads instantly from cache while syncing with Monday.com in the background</li><li><b>Stability:</b> Prevents credential decode failure on configs written before employee name was stored</li></ul>
+      ]]></description>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.4.4/OfficeAttendance-1.4.4.dmg"
+                 sparkle:edSignature="RDTEfICci9NUaNoBsUR8QfN4eNmiGe5MxTX9m21R3kGNoGz4INwdi1YHG7H28SJzGVV9idfrNFjioqP/TXucCg=="
+                 length="2790712"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.4.3</title>
       <sparkle:version>15</sparkle:version>
       <sparkle:shortVersionString>1.4.3</sparkle:shortVersionString>
