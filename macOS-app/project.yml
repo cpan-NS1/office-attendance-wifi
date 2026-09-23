@@ -16,8 +16,8 @@ settings:
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "13.0"
     PRODUCT_BUNDLE_IDENTIFIER: com.ibm.office-attendance
-    MARKETING_VERSION: "1.4.2"
-    CURRENT_PROJECT_VERSION: "14"
+    MARKETING_VERSION: "1.4.3"
+    CURRENT_PROJECT_VERSION: "15"
 
 targets:
   OfficeAttendance:
@@ -45,8 +45,8 @@ targets:
         CFBundleName: OfficeAttendance
         CFBundleDisplayName: Office Attendance
         CFBundleIdentifier: com.ibm.office-attendance
-        CFBundleVersion: "14"
-        CFBundleShortVersionString: "1.4.2"
+        CFBundleVersion: "15"
+        CFBundleShortVersionString: "1.4.3"
         LSUIElement: true
         NSUserNotificationAlertStyle: alert
         NSAppTransportSecurity:

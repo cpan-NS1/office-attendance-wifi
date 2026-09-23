@@ -3,6 +3,19 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.4.3</title>
+      <sparkle:version>15</sparkle:version>
+      <sparkle:shortVersionString>1.4.3</sparkle:shortVersionString>
+      <pubDate>Wed, 23 Sep 2026 14:23:49 +0000</pubDate>
+      <description><![CDATA[
+<h2>What's New in 1.4.3</h2><ul><li><b>Fix:</b> Employee IDs up to 8 digits are now accepted — previously the app silently truncated IDs to 7 digits, causing check-in to fail for some users</li></ul>
+      ]]></description>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.4.3/OfficeAttendance-1.4.3.dmg"
+                 sparkle:edSignature="U6Qya7lVlFcqJr+/sSKRjtXnMF6Fw4gCh8vTQjHc9gjAC2dYSOKTCKDwOGbDA/5AQZak4oT5EPLjWMDdOY60Cg=="
+                 length="2723498"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.4.2</title>
       <sparkle:version>14</sparkle:version>
       <sparkle:shortVersionString>1.4.2</sparkle:shortVersionString>
