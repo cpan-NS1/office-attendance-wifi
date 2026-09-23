@@ -70,13 +70,13 @@ struct SettingsView: View {
                             }
                             LabeledField("Employee ID") {
                                 VStack(alignment: .leading, spacing: 2) {
-                                    TextField("e.g. 1234567", text: $employeeId)
+                                    TextField("e.g. 1234567 or 12345678", text: $employeeId)
                                         .textFieldStyle(.roundedBorder)
                                         .onChange(of: employeeId) { newValue in
-                                            let filtered = String(newValue.filter(\.isNumber).prefix(7))
+                                            let filtered = String(newValue.filter(\.isNumber).prefix(8))
                                             if filtered != newValue { employeeId = filtered }
                                         }
-                                    Text("7-digit ID found in the Employee ID column of the board.")
+                                    Text("7 or 8-digit ID found in the Employee ID column of the board.")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
