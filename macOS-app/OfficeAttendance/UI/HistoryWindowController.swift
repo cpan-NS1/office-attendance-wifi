@@ -33,8 +33,8 @@ final class HistoryWindowController: NSWindowController, NSWindowDelegate {
         )
         window?.contentViewController = NSHostingController(rootView: view)
         NSApp.setActivationPolicy(.regular)
-        window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        window?.makeKeyAndOrderFront(nil)
     }
 
     func windowWillClose(_ notification: Notification) {

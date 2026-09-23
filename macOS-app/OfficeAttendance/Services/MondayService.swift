@@ -60,15 +60,22 @@ final class MondayService {
             return id
         }
 
-        // Try common employee column name variants
+        // Try common employee column name variants (text/number column with the IBM employee ID)
         func employeeId() throws -> String {
             for title in ["Employee ID", "Employee name", "Employee", "Name"] {
-                if let col = columns.first(where: { ($0["title"] as? String) == title }),
+                if let col = columns.first(where: {
+                    ($0["title"] as? String) == title && ($0["type"] as? String) != "people"
+                }),
                    let id = col["id"] as? String { return id }
             }
             let available = columns.compactMap { $0["title"] as? String }.joined(separator: ", ")
             throw MondayError.columnNotFound("employee column (tried: Employee ID, Employee name, Employee, Name). Available: \(available)")
         }
+
+        // Detect the People-type column named "Employee" for Monday.com user ID matching
+        let peopleColId = columns.first(where: {
+            ($0["title"] as? String) == "Employee" && ($0["type"] as? String) == "people"
+        }).flatMap { $0["id"] as? String }
 
         return ColumnMap(
             employeeColumnId:   try employeeId(),
@@ -77,7 +84,8 @@ final class MondayService {
             tuesdayColumnId:    try id(forTitle: "Tuesday"),
             wednesdayColumnId:  try id(forTitle: "Wednesday"),
             thursdayColumnId:   try id(forTitle: "Thursday"),
-            fridayColumnId:     try id(forTitle: "Friday")
+            fridayColumnId:     try id(forTitle: "Friday"),
+            peopleColumnId:     peopleColId
         )
     }
 
@@ -209,6 +217,161 @@ final class MondayService {
             current = calendar.date(byAdding: .weekOfYear, value: 1, to: current)!
         }
         return starts
+    }
+
+    // MARK: - Board list
+
+    /// A minimal board representation returned by `fetchBoards`.
+    struct Board {
+        let id: String
+        let name: String
+    }
+
+    /// Returns up to 50 private boards accessible with the given token.
+    /// Private boards are used for attendance at IBM; querying public boards
+    /// times out on large accounts.
+    func fetchBoards(token: String) async throws -> [Board] {
+        let query = "{ boards(limit: 50, board_kind: private) { id name } }"
+        let payload = try buildPayload(query: query, variables: [:])
+        let data = try await post(payload: payload, token: token)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let errors = (json?["errors"] as? [[String: Any]]) ?? []
+        if !errors.isEmpty {
+            throw MondayError.apiError(errors.first?["message"] as? String ?? "unknown")
+        }
+        guard let raw = (json?["data"] as? [String: Any])?["boards"] as? [[String: Any]]
+        else { throw MondayError.apiError("Unexpected response shape") }
+        return raw.compactMap { board -> Board? in
+            guard let id = board["id"] as? String,
+                  let name = board["name"] as? String else { return nil }
+            guard name.localizedCaseInsensitiveContains("attendance"),
+                  !name.lowercased().hasPrefix("subitems") else { return nil }
+            return Board(id: id, name: name)
+        }
+    }
+
+    // MARK: - Current user
+
+    /// A minimal representation of the authenticated Monday.com user.
+    struct CurrentUser {
+        let id: String
+        let name: String
+    }
+
+    /// Calls `me { id name }` and returns the authenticated user's Monday.com ID and display name.
+    func fetchCurrentUser(token: String) async throws -> CurrentUser {
+        let query = "{ me { id name } }"
+        let payload = try buildPayload(query: query, variables: [:])
+        let data = try await post(payload: payload, token: token)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let errors = (json?["errors"] as? [[String: Any]]) ?? []
+        if !errors.isEmpty {
+            throw MondayError.apiError(errors.first?["message"] as? String ?? "unknown")
+        }
+        guard let me = (json?["data"] as? [String: Any])?["me"] as? [String: Any],
+              let id = me["id"] as? String,
+              let name = me["name"] as? String
+        else { throw MondayError.apiError("Unexpected response shape from me query") }
+        return CurrentUser(id: id, name: name)
+    }
+
+    /// Scans the board for a row whose People column (`peopleColumnId`) contains the given
+    /// Monday.com user ID, then returns that row's Employee ID text value.
+    /// Throws `MondayError.noRowFound` if no matching row is found.
+    func findEmployeeId(boardId: String, mondayUserId: String,
+                        peopleColumnId: String, employeeIdColumnId: String,
+                        token: String) async throws -> String {
+        let firstPageQuery = """
+        query($boardId: ID!) {
+          boards(ids: [$boardId]) {
+            items_page(limit: 500) {
+              cursor
+              items {
+                id
+                column_values(ids: ["\(peopleColumnId)", "\(employeeIdColumnId)"]) {
+                  id text value
+                }
+              }
+            }
+          }
+        }
+        """
+        let nextPageQuery = """
+        query($cursor: String!) {
+          next_items_page(limit: 500, cursor: $cursor) {
+            cursor
+            items {
+              id
+              column_values(ids: ["\(peopleColumnId)", "\(employeeIdColumnId)"]) {
+                id text value
+              }
+            }
+          }
+        }
+        """
+
+        func matchesUser(_ item: [String: Any]) -> Bool {
+            guard let colVals = item["column_values"] as? [[String: Any]] else { return false }
+            return colVals.contains { cv in
+                guard cv["id"] as? String == peopleColumnId,
+                      let valueStr = cv["value"] as? String,
+                      let valueData = valueStr.data(using: .utf8),
+                      let valueJSON = try? JSONSerialization.jsonObject(with: valueData) as? [String: Any],
+                      let persons = valueJSON["personsAndTeams"] as? [[String: Any]]
+                else { return false }
+                return persons.contains { person in
+                    // id may be Int or String depending on API version
+                    if let pid = person["id"] as? Int { return String(pid) == mondayUserId }
+                    if let pid = person["id"] as? String { return pid == mondayUserId }
+                    return false
+                }
+            }
+        }
+
+        func employeeIdValue(from item: [String: Any]) -> String? {
+            guard let colVals = item["column_values"] as? [[String: Any]] else { return nil }
+            return colVals.first { $0["id"] as? String == employeeIdColumnId }
+                          .flatMap { $0["text"] as? String }
+                          .flatMap { $0.isEmpty ? nil : $0 }
+        }
+
+        // First page
+        let firstPayload = try buildPayload(query: firstPageQuery, variables: ["boardId": boardId])
+        let firstData = try await post(payload: firstPayload, token: token)
+        let firstJson = try JSONSerialization.jsonObject(with: firstData) as? [String: Any]
+        let firstErrors = (firstJson?["errors"] as? [[String: Any]]) ?? []
+        if !firstErrors.isEmpty {
+            throw MondayError.apiError(firstErrors.first?["message"] as? String ?? "unknown")
+        }
+        guard let firstPage = ((((firstJson?["data"] as? [String: Any])?["boards"] as? [[String: Any]])?.first)?["items_page"] as? [String: Any])
+        else { throw MondayError.apiError("Unexpected response shape") }
+
+        let firstItems = firstPage["items"] as? [[String: Any]] ?? []
+        if let match = firstItems.first(where: matchesUser), let empId = employeeIdValue(from: match) {
+            return empId
+        }
+
+        // Subsequent pages
+        var cursor = firstPage["cursor"] as? String
+        while let activeCursor = cursor {
+            let payload = try buildPayload(query: nextPageQuery, variables: ["cursor": activeCursor])
+            let data = try await post(payload: payload, token: token)
+            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+            let errors = (json?["errors"] as? [[String: Any]]) ?? []
+            if !errors.isEmpty {
+                throw MondayError.apiError(errors.first?["message"] as? String ?? "unknown")
+            }
+            guard let page = (json?["data"] as? [String: Any])?["next_items_page"] as? [String: Any]
+            else { throw MondayError.apiError("Unexpected response shape") }
+
+            let items = page["items"] as? [[String: Any]] ?? []
+            if let match = items.first(where: matchesUser), let empId = employeeIdValue(from: match) {
+                return empId
+            }
+            cursor = page["cursor"] as? String
+        }
+
+        throw MondayError.noRowFound
     }
 
     // MARK: - Internal helpers

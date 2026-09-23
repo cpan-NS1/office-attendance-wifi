@@ -24,19 +24,22 @@ final class CredentialStoreTests: XCTestCase {
     }
 
     func test_saveAndLoad_roundTrips() throws {
-        try store.save(token: "tok", boardId: "123", employeeId: "emp",
+        try store.save(token: "tok", boardId: "123", boardName: "NMI Attendance",
+                       employeeId: "emp", employeeName: "Alice",
                        ipPrefix: "9.", dnsDomain: "ibm.com")
         let creds = store.load()
         XCTAssertEqual(creds?.token, "tok")
         XCTAssertEqual(creds?.boardId, "123")
+        XCTAssertEqual(creds?.boardName, "NMI Attendance")
         XCTAssertEqual(creds?.employeeId, "emp")
+        XCTAssertEqual(creds?.employeeName, "Alice")
         XCTAssertEqual(creds?.ipPrefix, "9.")
         XCTAssertEqual(creds?.dnsDomain, "ibm.com")
     }
 
     func test_load_returnsNil_whenTokenIsEmpty() throws {
-        try store.save(token: "", boardId: "123", employeeId: "emp",
-                       ipPrefix: "9.", dnsDomain: "ibm.com")
+        try store.save(token: "", boardId: "123", boardName: "", employeeId: "emp",
+                       employeeName: "", ipPrefix: "9.", dnsDomain: "ibm.com")
         XCTAssertNil(store.load())
     }
 
@@ -47,14 +50,14 @@ final class CredentialStoreTests: XCTestCase {
                             fridayColumnId: "f")
         store.saveColumnMap(map)
         // Save credentials without touching the column map
-        try store.save(token: "tok2", boardId: "999", employeeId: "emp2",
-                       ipPrefix: "10.", dnsDomain: "example.com")
+        try store.save(token: "tok2", boardId: "999", boardName: "", employeeId: "emp2",
+                       employeeName: "", ipPrefix: "10.", dnsDomain: "example.com")
         XCTAssertEqual(store.loadColumnMap()?.mondayColumnId, "m")
     }
 
     func test_clearAll_removesCredentialsAndHistory() throws {
-        try store.save(token: "tok", boardId: "123", employeeId: "emp",
-                       ipPrefix: "9.", dnsDomain: "ibm.com")
+        try store.save(token: "tok", boardId: "123", boardName: "", employeeId: "emp",
+                       employeeName: "", ipPrefix: "9.", dnsDomain: "ibm.com")
         store.saveAttendance(date: "2025-01-01", status: .office)
         store.clearAll()
         XCTAssertNil(store.load())

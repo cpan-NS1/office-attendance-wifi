@@ -23,7 +23,9 @@ final class CredentialStore: ObservableObject {
     struct Credentials {
         let token: String
         let boardId: String
+        let boardName: String
         let employeeId: String
+        let employeeName: String
         let ipPrefix: String
         let dnsDomain: String
     }
@@ -39,7 +41,9 @@ final class CredentialStore: ObservableObject {
     private struct StoredConfig: Codable {
         var token: String
         var boardId: String
+        var boardName: String = ""
         var employeeId: String
+        var employeeName: String
         var ipPrefix: String
         var dnsDomain: String
         var columnMap: ColumnMap?
@@ -58,17 +62,21 @@ final class CredentialStore: ObservableObject {
 
     // MARK: - Public API
 
-    func save(token: String, boardId: String, employeeId: String,
-              ipPrefix: String, dnsDomain: String) throws {
+    func save(token: String, boardId: String, boardName: String, employeeId: String,
+              employeeName: String, ipPrefix: String, dnsDomain: String) throws {
         // Load existing config so we preserve any saved columnMap.
         var config = (try? loadStoredConfig()) ?? StoredConfig(token: "", boardId: "",
-                                                               employeeId: "", ipPrefix: "",
-                                                               dnsDomain: "", columnMap: nil)
-        config.token      = token
-        config.boardId    = boardId
-        config.employeeId = employeeId
-        config.ipPrefix   = ipPrefix
-        config.dnsDomain  = dnsDomain
+                                                               boardName: "",
+                                                               employeeId: "", employeeName: "",
+                                                               ipPrefix: "", dnsDomain: "",
+                                                               columnMap: nil)
+        config.token        = token
+        config.boardId      = boardId
+        config.boardName    = boardName
+        config.employeeId   = employeeId
+        config.employeeName = employeeName
+        config.ipPrefix     = ipPrefix
+        config.dnsDomain    = dnsDomain
         try writeConfig(config)
     }
 
@@ -78,7 +86,9 @@ final class CredentialStore: ObservableObject {
         else { return nil }
         return Credentials(token: config.token,
                            boardId: config.boardId,
+                           boardName: config.boardName,
                            employeeId: config.employeeId,
+                           employeeName: config.employeeName,
                            ipPrefix: config.ipPrefix,
                            dnsDomain: config.dnsDomain)
     }
@@ -92,8 +102,9 @@ final class CredentialStore: ObservableObject {
 
     func saveColumnMap(_ map: ColumnMap) {
         var config = (try? loadStoredConfig()) ?? StoredConfig(token: "", boardId: "",
-                                                               employeeId: "", ipPrefix: "",
-                                                               dnsDomain: "", columnMap: nil)
+                                                               employeeId: "", employeeName: "",
+                                                               ipPrefix: "", dnsDomain: "",
+                                                               columnMap: nil)
         config.columnMap = map
         try? writeConfig(config)
     }
@@ -153,7 +164,7 @@ final class CredentialStore: ObservableObject {
         }
 
         let config = StoredConfig(token: token, boardId: boardId, employeeId: employeeId,
-                                  ipPrefix: ipPrefix, dnsDomain: dnsDomain,
+                                  employeeName: "", ipPrefix: ipPrefix, dnsDomain: dnsDomain,
                                   columnMap: columnMap)
         try? writeConfig(config)
 

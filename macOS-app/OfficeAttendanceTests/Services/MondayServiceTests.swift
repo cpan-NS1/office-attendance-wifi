@@ -129,13 +129,14 @@ final class MondayServiceRetryTests: XCTestCase {
             "data": [
                 "boards": [[
                     "columns": [
-                        ["id": "person",     "title": "Employee",   "type": "people"],
-                        ["id": "week_start", "title": "Week Start", "type": "date"],
-                        ["id": "mon",        "title": "Monday",     "type": "text"],
-                        ["id": "tue",        "title": "Tuesday",    "type": "text"],
-                        ["id": "wed",        "title": "Wednesday",  "type": "text"],
-                        ["id": "thu",        "title": "Thursday",   "type": "text"],
-                        ["id": "fri",        "title": "Friday",     "type": "text"],
+                        ["id": "emp_id",     "title": "Employee ID", "type": "text"],
+                        ["id": "person",     "title": "Employee",    "type": "people"],
+                        ["id": "week_start", "title": "Week Start",  "type": "date"],
+                        ["id": "mon",        "title": "Monday",      "type": "text"],
+                        ["id": "tue",        "title": "Tuesday",     "type": "text"],
+                        ["id": "wed",        "title": "Wednesday",   "type": "text"],
+                        ["id": "thu",        "title": "Thursday",    "type": "text"],
+                        ["id": "fri",        "title": "Friday",      "type": "text"],
                     ]
                 ]]
             ]
@@ -218,7 +219,9 @@ final class MondayServicePaginationTests: XCTestCase {
     private let credentials = CredentialStore.Credentials(
         token: "test-token",
         boardId: "board-1",
+        boardName: "",
         employeeId: "1058851",
+        employeeName: "",
         ipPrefix: "",
         dnsDomain: ""
     )
@@ -365,5 +368,252 @@ final class MondayServicePaginationTests: XCTestCase {
 
         XCTAssertTrue(SequencedURLProtocol.responses.isEmpty,
                       "Both page responses should be consumed before throwing")
+    }
+}
+
+// MARK: - fetchCurrentUser tests
+
+final class MondayServiceFetchCurrentUserTests: XCTestCase {
+
+    override func setUp() {
+        super.setUp()
+        SequencedURLProtocol.responses = []
+    }
+
+    private func meJSON(id: String, name: String) -> Data {
+        let payload: [String: Any] = [
+            "data": ["me": ["id": id, "name": name]]
+        ]
+        return try! JSONSerialization.data(withJSONObject: payload)
+    }
+
+    private func meErrorJSON() -> Data {
+        let payload: [String: Any] = [
+            "errors": [["message": "Not authenticated"]]
+        ]
+        return try! JSONSerialization.data(withJSONObject: payload)
+    }
+
+    func test_fetchCurrentUser_returnsIdAndName() async throws {
+        SequencedURLProtocol.responses = [
+            .success(meJSON(id: "114344334", name: "Chandler Pan"))
+        ]
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        let user = try await service.fetchCurrentUser(token: "tok")
+        XCTAssertEqual(user.id, "114344334")
+        XCTAssertEqual(user.name, "Chandler Pan")
+    }
+
+    func test_fetchCurrentUser_throwsOnAPIError() async {
+        SequencedURLProtocol.responses = [
+            .success(meErrorJSON())
+        ]
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        do {
+            _ = try await service.fetchCurrentUser(token: "tok")
+            XCTFail("Expected MondayError.apiError to be thrown")
+        } catch MondayError.apiError(let msg) {
+            XCTAssertTrue(msg.contains("Not authenticated"), "Expected auth error message, got: \(msg)")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+}
+
+// MARK: - findEmployeeId tests
+
+final class MondayServiceFindEmployeeIdTests: XCTestCase {
+
+    override func setUp() {
+        super.setUp()
+        SequencedURLProtocol.responses = []
+    }
+
+    /// Builds an items_page response where one item has a People column containing userId
+    /// and an Employee ID text column with the given employeeId.
+    private func boardPageJSON(mondayUserId: Int, employeeId: String, cursor: String? = nil) -> Data {
+        var page: [String: Any] = [
+            "items": [[
+                "id": "item-1",
+                "column_values": [
+                    [
+                        "id": "people",
+                        "text": "user@ibm.com",
+                        "value": "{\"personsAndTeams\":[{\"id\":\(mondayUserId),\"kind\":\"person\"}]}"
+                    ],
+                    [
+                        "id": "text_mm54pmq7",
+                        "text": employeeId,
+                        "value": "\"\(employeeId)\""
+                    ]
+                ]
+            ]]
+        ]
+        if let cursor { page["cursor"] = cursor }
+        return try! JSONSerialization.data(withJSONObject: ["data": ["boards": [["items_page": page]]]])
+    }
+
+    /// Builds an items_page response where the item belongs to a different user.
+    private func boardPageNoMatchJSON(cursor: String? = nil) -> Data {
+        var page: [String: Any] = [
+            "items": [[
+                "id": "item-2",
+                "column_values": [
+                    [
+                        "id": "people",
+                        "text": "other@ibm.com",
+                        "value": "{\"personsAndTeams\":[{\"id\":999999,\"kind\":\"person\"}]}"
+                    ],
+                    [
+                        "id": "text_mm54pmq7",
+                        "text": "0000001",
+                        "value": "\"0000001\""
+                    ]
+                ]
+            ]]
+        ]
+        if let cursor { page["cursor"] = cursor }
+        return try! JSONSerialization.data(withJSONObject: ["data": ["boards": [["items_page": page]]]])
+    }
+
+    private func nextPageJSON(mondayUserId: Int, employeeId: String) -> Data {
+        let page: [String: Any] = [
+            "items": [[
+                "id": "item-3",
+                "column_values": [
+                    [
+                        "id": "people",
+                        "text": "user@ibm.com",
+                        "value": "{\"personsAndTeams\":[{\"id\":\(mondayUserId),\"kind\":\"person\"}]}"
+                    ],
+                    [
+                        "id": "text_mm54pmq7",
+                        "text": employeeId,
+                        "value": "\"\(employeeId)\""
+                    ]
+                ]
+            ]]
+        ]
+        return try! JSONSerialization.data(withJSONObject: ["data": ["next_items_page": page]])
+    }
+
+    func test_findEmployeeId_returnsEmployeeIdWhenMatchFound() async throws {
+        SequencedURLProtocol.responses = [
+            .success(boardPageJSON(mondayUserId: 114344334, employeeId: "1058851"))
+        ]
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        let result = try await service.findEmployeeId(boardId: "123", mondayUserId: "114344334",
+                                                       peopleColumnId: "people",
+                                                       employeeIdColumnId: "text_mm54pmq7",
+                                                       token: "tok")
+        XCTAssertEqual(result, "1058851")
+    }
+
+    func test_findEmployeeId_throwsNoRowFoundWhenNoMatch() async {
+        SequencedURLProtocol.responses = [
+            .success(boardPageNoMatchJSON())
+        ]
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        do {
+            _ = try await service.findEmployeeId(boardId: "123", mondayUserId: "114344334",
+                                                  peopleColumnId: "people",
+                                                  employeeIdColumnId: "text_mm54pmq7",
+                                                  token: "tok")
+            XCTFail("Expected MondayError.noRowFound")
+        } catch MondayError.noRowFound {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func test_findEmployeeId_matchOnSecondPage() async throws {
+        SequencedURLProtocol.responses = [
+            .success(boardPageNoMatchJSON(cursor: "cursor-p2")),
+            .success(nextPageJSON(mondayUserId: 114344334, employeeId: "1058851"))
+        ]
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        let result = try await service.findEmployeeId(boardId: "123", mondayUserId: "114344334",
+                                                       peopleColumnId: "people",
+                                                       employeeIdColumnId: "text_mm54pmq7",
+                                                       token: "tok")
+        XCTAssertEqual(result, "1058851")
+        XCTAssertTrue(SequencedURLProtocol.responses.isEmpty)
+    }
+}
+
+// MARK: - fetchBoards tests
+
+final class MondayServiceFetchBoardsTests: XCTestCase {
+
+    override func setUp() {
+        super.setUp()
+        SequencedURLProtocol.responses = []
+    }
+
+    private func boardsJSON(boards: [(id: String, name: String)]) -> Data {
+        let payload: [String: Any] = [
+            "data": [
+                "boards": boards.map { ["id": $0.id, "name": $0.name] }
+            ]
+        ]
+        return try! JSONSerialization.data(withJSONObject: payload)
+    }
+
+    private func boardsErrorJSON() -> Data {
+        let payload: [String: Any] = [
+            "errors": [["message": "Not authenticated"]]
+        ]
+        return try! JSONSerialization.data(withJSONObject: payload)
+    }
+
+    func test_fetchBoards_returnsOnlyAttendanceBoards() async throws {
+        SequencedURLProtocol.responses = [
+            .success(boardsJSON(boards: [
+                (id: "111", name: "Chandler NMI Attendance"),
+                (id: "222", name: "Team Board"),
+                (id: "333", name: "Subitems of Chandler NMI Attendance"),
+                (id: "444", name: "Another Attendance Board"),
+            ]))
+        ]
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        let boards = try await service.fetchBoards(token: "tok")
+        XCTAssertEqual(boards.map(\.id), ["111", "444"],
+                       "Should include only boards with 'Attendance' in name, excluding Subitems")
+    }
+
+    func test_fetchBoards_returnsEmptyListWhenNoAttendanceBoards() async throws {
+        SequencedURLProtocol.responses = [
+            .success(boardsJSON(boards: [
+                (id: "111", name: "Team Board"),
+                (id: "222", name: "Project Tracker"),
+            ]))
+        ]
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        let boards = try await service.fetchBoards(token: "tok")
+        XCTAssertTrue(boards.isEmpty)
+    }
+
+    func test_fetchBoards_throwsOnAPIError() async {
+        SequencedURLProtocol.responses = [
+            .success(boardsErrorJSON())
+        ]
+        let service = MondayService(session: SequencedURLProtocol.makeSession(),
+                                    retryDelayNanoseconds: 0)
+        do {
+            _ = try await service.fetchBoards(token: "tok")
+            XCTFail("Expected MondayError.apiError to be thrown")
+        } catch MondayError.apiError(let msg) {
+            XCTAssertTrue(msg.contains("Not authenticated"), "Expected auth error, got: \(msg)")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 }

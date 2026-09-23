@@ -6,6 +6,9 @@ struct ColumnMap: Codable {
     var wednesdayColumnId: String
     var thursdayColumnId: String
     var fridayColumnId: String
+    /// Column ID of the People-type column (title "Employee") used for Monday.com user matching.
+    /// Nil when the board has no People column (older boards or manual override setups).
+    var peopleColumnId: String?
 
     /// Returns the column ID for the given weekday (1 = Mon … 5 = Fri).
     /// Returns nil for weekends.

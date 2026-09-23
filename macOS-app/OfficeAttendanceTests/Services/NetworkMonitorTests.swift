@@ -69,7 +69,7 @@ final class NetworkMonitorTests: XCTestCase {
 final class NetworkMonitorOfficeDetectionTests: XCTestCase {
     private var monitor: NetworkMonitor!
     private let creds = CredentialStore.Credentials(
-        token: "", boardId: "", employeeId: "",
+        token: "", boardId: "", boardName: "", employeeId: "", employeeName: "",
         ipPrefix: "9.",
         dnsDomain: "ibm.com"
     )

@@ -35,9 +35,14 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         )
         let hostingController = NSHostingController(rootView: settingsView)
         window?.contentViewController = hostingController
+        // Activate the app first, then order the window front.
+        // setActivationPolicy must come before activate; activate must come
+        // before makeKeyAndOrderFront so that when the window is ordered
+        // front the app is already active and the window actually receives
+        // focus instead of sitting behind the previous frontmost app.
         NSApp.setActivationPolicy(.regular)
-        window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        window?.makeKeyAndOrderFront(nil)
     }
 
     func windowWillClose(_ notification: Notification) {
