@@ -3,6 +3,19 @@
   <channel>
     <title>Office Attendance Updates</title>
     <item>
+      <title>Version 1.4.2</title>
+      <sparkle:version>14</sparkle:version>
+      <sparkle:shortVersionString>1.4.2</sparkle:shortVersionString>
+      <pubDate>Wed, 23 Sep 2026 13:49:34 +0000</pubDate>
+      <description><![CDATA[
+<h2>What's New in 1.4.2</h2><ul><li><b>Fix:</b> Check-in now works correctly on Macs with non-UTC timezones — week dates are computed in UTC to match Monday.com board storage</li><li><b>Fix:</b> Clear error shown when board has not been verified in Settings instead of silently doing nothing</li></ul>
+      ]]></description>
+      <enclosure url="https://github.com/cpan-NS1/office-attendance-wifi/releases/download/v1.4.2/OfficeAttendance-1.4.2.dmg"
+                 sparkle:edSignature="V44r2cqrzyu+Pt04IZEK5SDvU4SkrNr7Qixg0arPTy4Pbx1x1sF2QyJrBliJGSSTR3+1+RbpIUFhGmJJpR+aDw=="
+                 length="2728423"
+                 type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Version 1.4.1</title>
       <sparkle:version>13</sparkle:version>
       <sparkle:shortVersionString>1.4.1</sparkle:shortVersionString>
