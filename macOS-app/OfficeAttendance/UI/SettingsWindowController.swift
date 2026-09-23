@@ -35,14 +35,20 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         )
         let hostingController = NSHostingController(rootView: settingsView)
         window?.contentViewController = hostingController
-        // Activate the app first, then order the window front.
-        // setActivationPolicy must come before activate; activate must come
-        // before makeKeyAndOrderFront so that when the window is ordered
-        // front the app is already active and the window actually receives
-        // focus instead of sitting behind the previous frontmost app.
+        // When triggered from an NSMenu action, macOS closes the menu and
+        // briefly returns focus to the previously-active app after the action
+        // fires. A one-tick async dispatch is not enough — the menu dismissal
+        // animation completes after that tick and the other app steals focus
+        // back. orderFrontRegardless() makes the window appear on screen
+        // immediately, and we wait 150 ms (well past menu dismissal) before
+        // calling activate + makeKeyAndOrderFront so we reliably win the
+        // focus race.
+        window?.orderFrontRegardless()
         NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
-        window?.makeKeyAndOrderFront(nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            NSApp.activate(ignoringOtherApps: true)
+            self?.window?.makeKeyAndOrderFront(nil)
+        }
     }
 
     func windowWillClose(_ notification: Notification) {

@@ -130,7 +130,7 @@ struct SettingsView: View {
                                     } else {
                                         switch fetchEmployeeStatus {
                                         case .idle, .failed:
-                                            TextField("Enter manually", text: $employeeId)
+                                            TextField("e.g. 12345678", text: $employeeId)
                                                 .textFieldStyle(.roundedBorder)
                                                 .onChange(of: employeeId) { newValue in
                                                     let filtered = String(newValue.filter(\.isNumber).prefix(8))
@@ -324,10 +324,10 @@ struct SettingsView: View {
                 }
                 .onChange(of: boardSearchText) { newValue in
                     if boardList.isEmpty, boardFieldFocused {
-                        // User is manually typing a raw board ID — restrict to digits (max 8).
+                        // User is manually typing a raw board ID — restrict to digits only.
                         // Guard on boardFieldFocused so loadExisting() restoring a saved board
                         // name (which contains letters) is never filtered out.
-                        let filtered = String(newValue.filter(\.isNumber).prefix(8))
+                        let filtered = String(newValue.filter(\.isNumber))
                         if filtered != newValue { boardSearchText = filtered }
                         boardId = filtered
                     } else if showBoardPicker {

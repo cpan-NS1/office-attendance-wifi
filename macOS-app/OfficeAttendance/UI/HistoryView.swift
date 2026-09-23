@@ -211,7 +211,6 @@ struct HistoryView: View {
               let columnMap = credentialStore.loadColumnMap() else { return }
         isFetching = true
         fetchError = nil
-        remoteEntries = [:]
         Task {
             do {
                 let remote = try await mondayService.fetchMonthStatus(

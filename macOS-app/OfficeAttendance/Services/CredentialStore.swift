@@ -43,7 +43,7 @@ final class CredentialStore: ObservableObject {
         var boardId: String
         var boardName: String = ""
         var employeeId: String
-        var employeeName: String
+        var employeeName: String = ""
         var ipPrefix: String
         var dnsDomain: String
         var columnMap: ColumnMap?
