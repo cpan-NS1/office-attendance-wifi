@@ -245,17 +245,16 @@ final class MondayService {
         }
         """
 
-        let decoder = JSONDecoder()
         func matchesTarget(_ item: [String: Any]) -> Bool {
             guard let colVals = item["column_values"] as? [[String: Any]] else { return false }
             let empMatch = colVals.contains {
                 $0["id"] as? String == columnMap.employeeColumnId &&
-                ($0["text"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) == employeeId
+                $0["text"] as? String == employeeId
             }
             let weekMatch = colVals.contains {
                 $0["id"] as? String == columnMap.weekStartColumnId &&
-                (try? decoder.decode([String: String].self,
-                    from: Data(($0["value"] as? String ?? "").utf8)))?["date"] == weekStartDate
+                (try? (JSONDecoder().decode([String: String].self,
+                    from: Data(($0["value"] as? String ?? "").utf8))))?["date"] == weekStartDate
             }
             return empMatch && weekMatch
         }
