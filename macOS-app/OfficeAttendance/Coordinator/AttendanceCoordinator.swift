@@ -64,8 +64,11 @@ final class AttendanceCoordinator: ObservableObject {
     }
 
     func manualCheckIn(status: AttendanceStatus) async {
-        guard let credentials = credentialStore.load(),
-              let columnMap = credentialStore.loadColumnMap() else { return }
+        guard let credentials = credentialStore.load() else { return }
+        guard let columnMap = credentialStore.loadColumnMap() else {
+            checkInState = .error("Board not verified — open Settings and click \"Verify Board\", then Save.")
+            return
+        }
         do {
             try await mondayService.checkIn(status: status, credentials: credentials,
                                             columnMap: columnMap)
@@ -137,7 +140,7 @@ final class AttendanceCoordinator: ObservableObject {
         guard !isWeekend() else { return }
         guard shouldUpdate(isOnOfficeNetwork: isOnOfficeNetwork) else { return }
         guard let columnMap = credentialStore.loadColumnMap() else {
-            checkInState = .error("Setup incomplete — please open Settings and verify your board")
+            checkInState = .error("Board not verified — open Settings and click \"Verify Board\", then Save.")
             NotificationService.shared.sendSetupReminder()
             return
         }
